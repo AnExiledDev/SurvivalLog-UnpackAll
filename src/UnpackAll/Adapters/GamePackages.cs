@@ -126,13 +126,13 @@ internal sealed class GamePackages : IPackageGame
             if (before == null || before.OwnerId != storageId || before.ItemCount <= 0) return 0;
 
             var held = before.ItemCount;
-            var isMoved = items.TryQuickMoveItem(storagePackage.ItemId, storageId, role.InstanceId, true, false);
+            var isMoved = QuickMoveToBag(items, storagePackage.ItemId, storageId, role.InstanceId);
             var after = items.GetItemData(storagePackage.ItemId);
             var remaining = after != null && after.OwnerId == storageId ? Math.Max(0, after.ItemCount) : 0;
             var taken = Math.Max(0, held - remaining);
 
             // The game answers false after part of a stack already went onto bag stacks, so its answer is only logged.
-            _log($"took storage package {storagePackage.ItemId} (config {storagePackage.ConfigId}) from storage {storageId}: {taken} of {held}, accepted {isMoved}");
+            _log($"took storage package {storagePackage.ItemId} (config {storagePackage.ConfigId}) from storage {storageId}: {taken} of {held}, accepted {isMoved?.ToString() ?? "threw"}");
 
             return taken;
         }
@@ -141,6 +141,24 @@ internal sealed class GamePackages : IPackageGame
             ReportOnce("storage move", ex);
 
             return 0;
+        }
+    }
+
+    /// <summary>
+    /// The move alone, so a throw after part of the stack already left still reaches the read-back that counts what
+    /// left. Null when the move threw; the exception is logged once.
+    /// </summary>
+    private bool? QuickMoveToBag(ItemManager items, long itemId, long storageId, long bagId)
+    {
+        try
+        {
+            return items.TryQuickMoveItem(itemId, storageId, bagId, true, false);
+        }
+        catch (Exception ex)
+        {
+            ReportOnce("storage move", ex);
+
+            return null;
         }
     }
 
@@ -436,10 +454,11 @@ internal sealed class GamePackages : IPackageGame
     private static bool IsSameDrop(DropItem? found, DropItem drop) => found != null && found.Pointer == drop.Pointer;
 
     /// <summary>
-    /// Packages in the home's storages: every furniture with a bag on the home map, as the game's own list for building
-    /// and crafting from storage gives them, less the ones that list leaves out (locked storages and the bins of a brew
-    /// barrel, shredder, compressor, dye vat or greenhouse) and the drone hub and drones, whose bags hold trade cargo.
-    /// A storage that cannot be read is skipped. Each package's storage is kept for the move.
+    /// Packages in the home's storages: every visible furniture with a bag on the home map, as the game's own list
+    /// gives them (AgentManager.GetFurnituresWithBag), less the ones the cost pool leaves out (locked storages and the
+    /// bins of a brew barrel, shredder, compressor, dye vat or greenhouse), the drone hub and drones, whose bags hold
+    /// trade cargo, and the neighbour gift basket and the door box, which the game treats apart. A storage that cannot
+    /// be read is skipped. Each package's storage is kept for the move.
     /// </summary>
     private IReadOnlyList<Package> ReadStorages(AgentManager agents, ItemManager items, ConfigManager config)
     {
@@ -450,7 +469,7 @@ internal sealed class GamePackages : IPackageGame
         {
             var storage = found[i];
 
-            if (storage == null || ItemManager.IsExcludedFromCostPool(storage.InstanceId) || IsDroneBay(storage)) continue;
+            if (storage == null || ItemManager.IsExcludedFromCostPool(storage.InstanceId) || IsDroneBay(storage) || IsSetApart(storage)) continue;
 
             foreach (var package in ReadBag(items, config, storage.InstanceId))
             {
@@ -465,39 +484,60 @@ internal sealed class GamePackages : IPackageGame
     private static bool IsDroneBay(Furniture furniture) =>
         StrangerTradeActiveManager.IsDroneHub(furniture.AgentConfigId) || StrangerTradeActiveManager.TripOf(furniture) != null;
 
-    /// <summary>Storages are only touched with the config on, and only moved from while no other window is open.</summary>
+    /// <summary>
+    /// The neighbour gift basket, which the game keeps out of its own storage lists (ItemManager.IsNeighborBasketForbidden
+    /// and Furniture.IsRobotContainerAllowed compare against NeighborRules.GetBasketFurnitureId, which is 0 when there
+    /// is none), and the door box, whose bag the game handles apart (VehicleConfig.IsBoxOwner). The door box is a
+    /// BagFurniture with its own owner id, so the list should never hold it; the check only makes sure.
+    /// </summary>
+    private static bool IsSetApart(Furniture furniture)
+    {
+        var basketId = NeighborRules.GetBasketFurnitureId();
+
+        return (basketId > 0 && furniture.AgentConfigId == basketId) || VehicleConfig.IsBoxOwner(furniture.InstanceId);
+    }
+
+    /// <summary>
+    /// Storages are only touched with the config on, and only moved from while no other window is open: a storage (the
+    /// bag screen showing two bags), a workstation, shop or trade panel the container hotkeys know, or any window the
+    /// Escape key would close. Moving items under such a window could leave it showing stacks that are gone. A check
+    /// that fails moves nothing either, but says so apart from an open window.
+    /// </summary>
     private StorageAccess ReadStorageAccess()
     {
         if (!_includeStorages) return StorageAccess.Off;
 
-        return IsOtherWindowOpen() ? StorageAccess.PanelOpen : StorageAccess.Allowed;
-    }
-
-    /// <summary>
-    /// True when any window other than the player's own bag is open: a storage (the bag screen showing two bags), a
-    /// workstation, shop or trade panel the container hotkeys know, or any window the Escape key would close. Moving
-    /// items under such a window could leave it showing stacks that are gone. A check that fails counts as open.
-    /// </summary>
-    private bool IsOtherWindowOpen()
-    {
         try
         {
             var ui = GameSingleton.Existing<ReduxUISystem>();
 
-            if (ui == null) return true;
-            if (ui.HasModalUIOpenExcept(Il2CppType.Of<WebUI_BackpackUI>())) return true;
-            if (OtherPanels.Any(panel => ui.IsUIActive(panel()))) return true;
-            if (!ui.IsUIActive(Il2CppType.Of<WebUI_BackpackUI>())) return false;
+            if (ui == null)
+            {
+                LogOnce("window check ui", "the game's window system is not found, so storages are left alone (reported once)");
+
+                return StorageAccess.Unknown;
+            }
+
+            if (ui.HasModalUIOpenExcept(Il2CppType.Of<WebUI_BackpackUI>())) return StorageAccess.PanelOpen;
+            if (OtherPanels.Any(panel => ui.IsUIActive(panel()))) return StorageAccess.PanelOpen;
+            if (!ui.IsUIActive(Il2CppType.Of<WebUI_BackpackUI>())) return StorageAccess.Allowed;
 
             var bagScreen = ui.GetState<State_Web_BackpackUI>(Il2CppType.Of<State_Web_BackpackUI>());
 
-            return bagScreen == null || bagScreen.IsDualBag;
+            if (bagScreen == null)
+            {
+                LogOnce("window check bag", "the open bag screen's state is not found, so storages are left alone (reported once)");
+
+                return StorageAccess.Unknown;
+            }
+
+            return bagScreen.IsDualBag ? StorageAccess.PanelOpen : StorageAccess.Allowed;
         }
         catch (Exception ex)
         {
             ReportOnce("window check", ex);
 
-            return true;
+            return StorageAccess.Unknown;
         }
     }
 

@@ -59,6 +59,13 @@ internal sealed class FakeGame : IPackageGame
     /// <summary>How many more packages the bag can carry in total, from the floor and storages alike.</summary>
     public int BagRoom { get; set; } = int.MaxValue;
 
+    /// <summary>
+    /// How many more packages the bag's weight allows from storages. Like the game's quick move
+    /// (ItemManager.TryQuickMoveItem), the whole stack is weighed before anything moves, so a stack heavier than this
+    /// is refused whole.
+    /// </summary>
+    public int BagWeight { get; set; } = int.MaxValue;
+
     /// <summary>Floor or storage packages that land on a stack already in the bag (their id to bag id), as when packages stack.</summary>
     public Dictionary<long, long> MergesInto { get; } = new();
 
@@ -117,8 +124,9 @@ internal sealed class FakeGame : IPackageGame
     }
 
     /// <summary>
-    /// Like the game's quick move, a stack keeps its id when it moves whole into the bag. When the bag runs out of room
-    /// partway, the units already moved stay in the bag and the rest stay in the storage: nothing is lost or doubled.
+    /// Like the game's quick move, a stack keeps its id when it moves whole into the bag, and a stack too heavy for the
+    /// bag does not move at all. When the bag runs out of room partway, the units already moved stay in the bag and the
+    /// rest stay in the storage: nothing is lost or doubled.
     /// </summary>
     public int TakeFromStorage(Package storagePackage)
     {
@@ -131,9 +139,10 @@ internal sealed class FakeGame : IPackageGame
         var stored = Storages[index];
         var moved = Math.Min(stored.Count, BagRoom);
 
-        if (moved == 0) return 0;
+        if (stored.Count > BagWeight || moved == 0) return 0;
 
         BagRoom -= moved;
+        BagWeight -= moved;
 
         if (moved == stored.Count) Storages.RemoveAt(index);
         else Storages[index] = stored with { Count = stored.Count - moved };

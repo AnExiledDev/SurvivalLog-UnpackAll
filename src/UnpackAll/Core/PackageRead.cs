@@ -61,4 +61,10 @@ public enum StorageAccess
     /// nothing is taken out of them: moving items under an open window could leave that window showing stale stacks.
     /// </summary>
     PanelOpen,
+
+    /// <summary>
+    /// The check for open windows failed, so storages are read but nothing is taken out of them, as with a window
+    /// open. The adapter logs why.
+    /// </summary>
+    Unknown,
 }

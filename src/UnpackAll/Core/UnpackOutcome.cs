@@ -36,8 +36,11 @@ public abstract record UnpackOutcome
 /// came off the floor into the bag and FromStorage came out of the home's storages into it, and WaitingInBag of those
 /// are still in it, not lined up or dropped. The rest were left, each for one reason: NoSpot had no free package spot
 /// at home, FloorRefused and StorageRefused could not be carried, FloorAway and StorageAway lie at home while the
-/// character is elsewhere, StorageBehindPanel stayed in storages because another window was open, and Unusable were
-/// refused by the game's use check, the first refusal's reason kept for the message.
+/// character is elsewhere, StorageBehindPanel stayed in storages because another window was open, StorageUnchecked
+/// stayed because the check for open windows failed, StorageTooBig stayed because their stack held more packages than
+/// the spots the bag and the floor left, and Unusable were refused by the game's use check, the first refusal's reason
+/// kept for the message. A package brought into the bag that found no spot is counted only in WaitingInBag, where it
+/// is.
 /// </summary>
 public sealed record UnpackTally(
     int Queued,
@@ -52,4 +55,6 @@ public sealed record UnpackTally(
     int FromStorage = 0,
     int StorageRefused = 0,
     int StorageAway = 0,
-    int StorageBehindPanel = 0);
+    int StorageBehindPanel = 0,
+    int StorageUnchecked = 0,
+    int StorageTooBig = 0);
