@@ -459,18 +459,75 @@ public class UnpackRunTests
     }
 
     [Fact]
-    public void Smaller_storage_stacks_take_the_spots_first()
+    public void The_storage_stack_that_fills_every_spot_moves_ahead_of_a_smaller_one()
     {
-        var game = new FakeGame { FreeSpots = 3, Storages = { Pkg(20, count: 2), Pkg(21), Pkg(22) } };
+        var game = new FakeGame { FreeSpots = 3, Storages = { Pkg(20, count: 3), Pkg(21) } };
+
+        var tally = Done(UnpackRun.Run(game));
+
+        Assert.Equal(new long[] { 20 }, game.StorageMovesTried);
+        Assert.Equal(new[] { Pkg(21) }, game.Storages);
+        Assert.Equal(new long[] { 20, 20, 20 }, game.Unpacking);
+        Assert.Empty(game.OverQueued);
+        Assert.Equal(3, tally.FromStorage);
+        Assert.Equal(1, tally.NoSpot);
+    }
+
+    [Fact]
+    public void Two_smaller_storage_stacks_move_when_together_they_fill_more_spots_than_a_bigger_one()
+    {
+        var game = new FakeGame { FreeSpots = 4, Storages = { Pkg(20, count: 3), Pkg(21, count: 2), Pkg(22, count: 2) } };
 
         var tally = Done(UnpackRun.Run(game));
 
         Assert.Equal(new long[] { 21, 22 }, game.StorageMovesTried);
-        Assert.Equal(new[] { Pkg(20, count: 2) }, game.Storages);
-        Assert.Equal(new long[] { 21, 22 }, game.Unpacking);
-        Assert.Equal(2, tally.FromStorage);
-        Assert.Equal(2, tally.NoSpot);
+        Assert.Equal(new[] { Pkg(20, count: 3) }, game.Storages);
+        Assert.Equal(new long[] { 21, 21, 22, 22 }, game.Unpacking);
+        Assert.Empty(game.OverQueued);
+        Assert.Equal(4, tally.FromStorage);
+        Assert.Equal(3, tally.NoSpot);
         Assert.Equal(0, tally.StorageTooBig);
+    }
+
+    [Fact]
+    public void Among_storage_picks_that_fill_as_many_spots_the_fewest_stacks_move()
+    {
+        var game = new FakeGame { FreeSpots = 3, Storages = { Pkg(20), Pkg(21, count: 2), Pkg(22, count: 3) } };
+
+        var tally = Done(UnpackRun.Run(game));
+
+        Assert.Equal(new long[] { 22 }, game.StorageMovesTried);
+        Assert.Equal(new[] { Pkg(20), Pkg(21, count: 2) }, game.Storages);
+        Assert.Equal(3, tally.FromStorage);
+        Assert.Equal(3, tally.NoSpot);
+    }
+
+    [Fact]
+    public void Among_storage_picks_with_as_many_stacks_the_ones_listed_first_move()
+    {
+        var game = new FakeGame { FreeSpots = 3, Storages = { Pkg(20), Pkg(21), Pkg(22, count: 2) } };
+
+        var tally = Done(UnpackRun.Run(game));
+
+        Assert.Equal(new long[] { 20, 22 }, game.StorageMovesTried);
+        Assert.Equal(new[] { Pkg(21) }, game.Storages);
+        Assert.Equal(3, tally.FromStorage);
+        Assert.Equal(1, tally.NoSpot);
+    }
+
+    [Fact]
+    public void When_a_picked_storage_stack_is_too_heavy_for_the_bag_the_next_best_fit_moves()
+    {
+        var game = new FakeGame { FreeSpots = 3, BagWeight = 2, Storages = { Pkg(20, count: 3), Pkg(21, count: 2) } };
+
+        var tally = Done(UnpackRun.Run(game));
+
+        Assert.Equal(new long[] { 20, 21 }, game.StorageMovesTried);
+        Assert.Equal(new[] { Pkg(20, count: 3) }, game.Storages);
+        Assert.Equal(new long[] { 21, 21 }, game.Unpacking);
+        Assert.Equal(2, tally.FromStorage);
+        Assert.Equal(3, tally.StorageRefused);
+        Assert.Equal(0, tally.NoSpot);
     }
 
     [Fact]

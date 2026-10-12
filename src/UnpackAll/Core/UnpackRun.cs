@@ -6,8 +6,8 @@ namespace UnpackAll.Core;
 
 /// <summary>
 /// One press of Unpack All. Packages already in the bag go first; packages on the floor at home are picked up while
-/// spots are left after that, and stacks in the home's storages that fit the spots still left after the floor are
-/// moved into the bag. Only as many unpacks are lined up as the home has free package spots, so every one of them can run
+/// spots are left after that, and the stacks in the home's storages that best fill the spots still left after the
+/// floor are moved into the bag. Only as many unpacks are lined up as the home has free package spots, so every one of them can run
 /// and none sits in the queue bar waiting to fail. Everything else stays where it is and is counted by the reason it
 /// was left.
 /// </summary>
@@ -174,11 +174,12 @@ public static class UnpackRun
         }
 
         /// <summary>
-        /// Moves storage stacks that fit the spots the floor left into the bag, smallest first so a big stack cannot
-        /// crowd out several small ones, then chooses among the packages that arrived. The game's move takes a whole
-        /// stack, so unlike the floor a stack bigger than the spots left is never moved: it stays in its storage
-        /// rather than spilling the extra packages into the bag. A package the game would not let the character use
-        /// stays in its storage, and nothing is moved away from home or while another window may be open.
+        /// Moves into the bag the storage stacks that together fill the most of the spots the floor left (see
+        /// <see cref="StackFit"/>), then chooses among the packages that arrived. The game's move takes a whole stack,
+        /// so unlike the floor a stack is never moved past the spots left: it stays in its storage rather than spilling
+        /// the extra packages into the bag. A picked stack that leaves its spots unused, because the game would not let
+        /// the character use it or the bag refused it, hands them to a new pick among the stacks not yet tried. Nothing
+        /// is moved away from home or while another window may be open.
         /// </summary>
         public void TakeFromStorages(IReadOnlyList<Package> storages, bool isHome, StorageAccess access)
         {
@@ -192,9 +193,16 @@ public static class UnpackRun
             }
 
             var bagBefore = _game.BagPackages();
+            var untried = Fitting(storages);
 
-            // OrderBy is stable, so stacks of one size keep the order the game listed them in.
-            foreach (var stored in storages.OrderBy(package => package.Count)) TakeFromStorage(stored, access);
+            while (StackFit.Pick(untried.Select(package => package.Count).ToList(), _spotsLeft - _storageClaimed) is { Count: > 0 } picked)
+            {
+                foreach (var index in picked) TakeFromStorage(untried[index], access);
+
+                untried = untried.Where((_, index) => !picked.Contains(index)).ToList();
+            }
+
+            _noSpot += Units(untried);
 
             if (FromStorage > 0) Choose(Arrivals(bagBefore, _game.BagPackages()), isBrought: true);
         }
@@ -276,38 +284,37 @@ public static class UnpackRun
         }
 
         /// <summary>
-        /// Takes a whole storage stack only when it fits the spots no earlier move has claimed. A stack bigger than all
-        /// the spots the bag and the floor left could never fit this press and is counted as too big; one that only no
-        /// longer fits is counted as having no spot. The use check runs next, so a package the character could not use
-        /// never leaves its storage. When a window is open or could not be checked the stack stays put but still claims
-        /// its spots, so the count said to wait is what a press with the window closed would move.
+        /// The storage stacks a pick may choose from. With no spot left none may, and a stack bigger than all the spots
+        /// the bag and the floor left could never fit this press, so it is counted as too big rather than as having no
+        /// spot.
+        /// </summary>
+        private List<Package> Fitting(IReadOnlyList<Package> storages)
+        {
+            var fitting = new List<Package>();
+
+            foreach (var stored in storages)
+            {
+                var units = Math.Max(0, stored.Count);
+
+                if (units == 0) continue;
+
+                if (_spotsLeft == 0) _noSpot += units;
+                else if (units > _spotsLeft) _storageTooBig += units;
+                else fitting.Add(stored);
+            }
+
+            return fitting;
+        }
+
+        /// <summary>
+        /// Takes one picked storage stack, which fits the spots no earlier move has claimed. The use check runs first,
+        /// so a package the character could not use never leaves its storage. When a window is open or could not be
+        /// checked the stack stays put but still claims its spots, so the count said to wait is what a press with the
+        /// window closed would move.
         /// </summary>
         private void TakeFromStorage(Package stored, StorageAccess access)
         {
             var units = Math.Max(0, stored.Count);
-
-            if (units == 0) return;
-
-            if (_spotsLeft == 0)
-            {
-                _noSpot += units;
-
-                return;
-            }
-
-            if (units > _spotsLeft)
-            {
-                _storageTooBig += units;
-
-                return;
-            }
-
-            if (units > _spotsLeft - _storageClaimed)
-            {
-                _noSpot += units;
-
-                return;
-            }
 
             if (_game.WhyUnusable(stored) is { } reason)
             {
