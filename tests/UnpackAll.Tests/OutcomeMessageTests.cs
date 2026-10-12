@@ -43,7 +43,7 @@ public class OutcomeMessageTests
     [Fact]
     public void A_chinese_reason_loses_its_full_stop_so_the_line_does_not_end_twice()
     {
-        Assert.Equal("Nothing unpacked. 1 can't be unpacked right now: 当前无法使用.", OutcomeMessage.Describe(Done(unusable: 1, unusableReason: "当前无法使用。")));
+        Assert.Equal("Nothing unpacked. 1 can't be unpacked right now: \u5F53\u524D\u65E0\u6CD5\u4F7F\u7528.", OutcomeMessage.Describe(Done(unusable: 1, unusableReason: "\u5F53\u524D\u65E0\u6CD5\u4F7F\u7528\u3002")));
     }
 
     [Fact]
@@ -64,6 +64,7 @@ public class OutcomeMessageTests
     {
         Assert.Equal("Can't unpack right now: load a save first.", OutcomeMessage.Describe(new UnpackOutcome.NotReady("load a save first")));
         Assert.Equal("No packages in your bag or on the floor at home.", OutcomeMessage.Describe(new UnpackOutcome.NothingToUnpack()));
+        Assert.Equal("No packages in your bag, on the floor or in storages at home.", OutcomeMessage.Describe(new UnpackOutcome.NothingToUnpack(HasLookedInStorages: true)));
         Assert.Equal("Could not start unpacking, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(new UnpackOutcome.StartFailed(2, 0)));
         Assert.Equal("Finish or cancel your queued actions first.", OutcomeMessage.Describe(new UnpackOutcome.QueueBusy()));
     }
@@ -90,11 +91,42 @@ public class OutcomeMessageTests
             OutcomeMessage.Describe(new UnpackOutcome.StartFailed(3, 2)));
     }
 
+    [Fact]
+    public void Packages_taken_from_storages_say_where_they_came_from_and_how_many_wait_in_the_bag()
+    {
+        Assert.Equal("Unpacking 2 packages. Took 2 from storages.", OutcomeMessage.Describe(Done(queued: 2, fromStorage: 2)));
+        Assert.Equal("Unpacking 1 package. Took 3 from storages, 2 waiting in your bag. 2 left: no free package spot at home.", OutcomeMessage.Describe(Done(queued: 1, fromStorage: 3, waitingInBag: 2, noSpot: 2)));
+        Assert.Equal(
+            "Unpacking 2 packages. Picked up 1 from the floor and took 2 from storages, 1 waiting in your bag.",
+            OutcomeMessage.Describe(Done(queued: 2, pickedUp: 1, fromStorage: 2, waitingInBag: 1)));
+    }
+
+    [Fact]
+    public void Every_reason_a_package_stayed_in_a_storage_is_counted()
+    {
+        var outcome = Done(storageRefused: 1, storageAway: 2, storageBehindPanel: 3);
+
+        Assert.Equal(
+            "Nothing unpacked. 1 left in storages: your bag could not carry it. 2 in storages at home: go home to unpack them. 3 left in storages: close the open window and press again.",
+            OutcomeMessage.Describe(outcome));
+    }
+
+    [Fact]
+    public void A_start_that_failed_after_moves_from_storages_says_the_packages_are_in_the_bag()
+    {
+        Assert.Equal(
+            "Could not start unpacking, see BepInEx/unpack-all.log. Took 1 from storages, 1 waiting in your bag.",
+            OutcomeMessage.Describe(new UnpackOutcome.StartFailed(1, 0, 1)));
+        Assert.Equal(
+            "Could not start unpacking, see BepInEx/unpack-all.log. Picked up 1 from the floor and took 2 from storages, 3 waiting in your bag.",
+            OutcomeMessage.Describe(new UnpackOutcome.StartFailed(3, 1, 2)));
+    }
+
     [Theory]
     [InlineData("<color=#ff0000>Not while fighting</color>.", "Not while fighting")]
     [InlineData("<b>Not</b> while <i>fighting</i>", "Not while fighting")]
     [InlineData("<#FF5555>Not while fighting</color>!", "Not while fighting")]
-    [InlineData("<color=#FF5555>不能在战斗中使用</color>。", "不能在战斗中使用")]
+    [InlineData("<color=#FF5555>\u4E0D\u80FD\u5728\u6218\u6597\u4E2D\u4F7F\u7528</color>\u3002", "\u4E0D\u80FD\u5728\u6218\u6597\u4E2D\u4F7F\u7528")]
     public void The_game_reason_loses_the_rich_text_tags_its_own_ui_would_render(string reason, string shown)
     {
         Assert.Equal($"Nothing unpacked. 1 can't be unpacked right now: {shown}.", OutcomeMessage.Describe(Done(unusable: 1, unusableReason: reason)));
@@ -126,6 +158,20 @@ public class OutcomeMessageTests
         Assert.Equal("2 of 3 unpacks ended without opening their packages, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(new WatchStep.Finished(Started: 3, Consumed: 1)));
     }
 
-    private static UnpackOutcome Done(int queued = 0, int pickedUp = 0, int waitingInBag = 0, int noSpot = 0, int floorRefused = 0, int floorAway = 0, int unusable = 0, string? unusableReason = null, int dropped = 0) =>
-        new UnpackOutcome.Done(new UnpackTally(queued, pickedUp, waitingInBag, noSpot, floorRefused, floorAway, unusable, unusableReason, dropped));
+    private static UnpackOutcome Done(
+        int queued = 0,
+        int pickedUp = 0,
+        int waitingInBag = 0,
+        int noSpot = 0,
+        int floorRefused = 0,
+        int floorAway = 0,
+        int unusable = 0,
+        string? unusableReason = null,
+        int dropped = 0,
+        int fromStorage = 0,
+        int storageRefused = 0,
+        int storageAway = 0,
+        int storageBehindPanel = 0) =>
+        new UnpackOutcome.Done(
+            new UnpackTally(queued, pickedUp, waitingInBag, noSpot, floorRefused, floorAway, unusable, unusableReason, dropped, fromStorage, storageRefused, storageAway, storageBehindPanel));
 }

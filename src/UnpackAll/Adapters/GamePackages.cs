@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using GameCore.HotUpdate;
 using GameCore.HotUpdate.Battle.Logic;
+using GameCore.HotUpdate.ReduxUI;
+using Il2CppInterop.Runtime;
 using UnityEngine;
 using UnpackAll.Core;
 
@@ -10,8 +12,9 @@ namespace UnpackAll.Adapters;
 
 /// <summary>
 /// The game's side of an unpack press. Every call goes through the game's own logic layer (the bag, the floor pickup,
-/// the use check and the action queue the inventory's Use button feeds), never through the UI's copy of it. Each call
-/// fails soft: an exception is logged once per kind of call and answered as a refusal.
+/// the storage quick move, the use check and the action queue the inventory's Use button feeds), never through the UI's
+/// copy of it. The UI is only read, to see which windows are open. Each call fails soft: an exception is logged once
+/// per kind of call and answered as a refusal.
 /// </summary>
 internal sealed class GamePackages : IPackageGame
 {
@@ -21,8 +24,29 @@ internal sealed class GamePackages : IPackageGame
     private const string CheckFailed = "the game's use check failed, see BepInEx/unpack-all.log";
     private const string NoReasonGiven = "the game would not allow it";
 
+    /// <summary>The panels besides the bag that ContainerTabHotKey.GetOpenPanelType knows, each a window over its own item bin.</summary>
+    private static readonly Func<Il2CppSystem.Type>[] OtherPanels =
+    {
+        () => Il2CppType.Of<WebUI_Brew>(),
+        () => Il2CppType.Of<WebUI_Compressor>(),
+        () => Il2CppType.Of<WebUI_Cooking>(),
+        () => Il2CppType.Of<WebUI_DroneHub>(),
+        () => Il2CppType.Of<WebUI_Dye>(),
+        () => Il2CppType.Of<WebUI_GreenhouseBuild>(),
+        () => Il2CppType.Of<WebUI_MaterialRack>(),
+        () => Il2CppType.Of<WebUI_RatCage>(),
+        () => Il2CppType.Of<WebUI_ShopUI>(),
+        () => Il2CppType.Of<WebUI_Shredder>(),
+        () => Il2CppType.Of<WebUI_ToolTable>(),
+        () => Il2CppType.Of<WebUI_TradeUI>(),
+    };
+
     private readonly Action<string> _log;
+    private readonly bool _includeStorages;
     private readonly HashSet<string> _reportedFailures = new();
+
+    /// <summary>Storage package item id to the storage holding it, as of the last read.</summary>
+    private readonly Dictionary<long, long> _storageOwners = new();
 
     /// <summary>Item config id to its unpack action id, or null when the item is not a package.</summary>
     private readonly Dictionary<int, int?> _unpackActions = new();
@@ -31,9 +55,10 @@ internal sealed class GamePackages : IPackageGame
 
     private IntPtr _knownConfig;
 
-    public GamePackages(Action<string> log)
+    public GamePackages(Action<string> log, bool includeStorages)
     {
         _log = log;
+        _includeStorages = includeStorages;
     }
 
     public PackageRead Read()
@@ -75,6 +100,45 @@ internal sealed class GamePackages : IPackageGame
         catch (Exception ex)
         {
             ReportOnce("floor pickup", ex);
+
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// The game's own quick move of a whole stack into the bag (ItemManager.TryQuickMoveItem, silent, no mold check),
+    /// the move a click on a stack does with the storage open. It weighs the whole stack before moving anything, and
+    /// moves each unit out of the storage and into the bag in one step, so a refusal partway leaves every unit in one
+    /// place or the other. The storage is the truth: what left it is what is counted.
+    /// </summary>
+    public int TakeFromStorage(Package storagePackage)
+    {
+        try
+        {
+            var world = GameSingleton.Existing<BattleLogicWorld>();
+            var items = world?._ItemManager;
+            var role = world?._AgentManager?.GetLeadingRole();
+
+            if (items == null || role == null || !_storageOwners.TryGetValue(storagePackage.ItemId, out var storageId)) return 0;
+
+            var before = items.GetItemData(storagePackage.ItemId);
+
+            if (before == null || before.OwnerId != storageId || before.ItemCount <= 0) return 0;
+
+            var held = before.ItemCount;
+            var isMoved = items.TryQuickMoveItem(storagePackage.ItemId, storageId, role.InstanceId, true, false);
+            var after = items.GetItemData(storagePackage.ItemId);
+            var remaining = after != null && after.OwnerId == storageId ? Math.Max(0, after.ItemCount) : 0;
+            var taken = Math.Max(0, held - remaining);
+
+            // The game answers false after part of a stack already went onto bag stacks, so its answer is only logged.
+            _log($"took storage package {storagePackage.ItemId} (config {storagePackage.ConfigId}) from storage {storageId}: {taken} of {held}, accepted {isMoved}");
+
+            return taken;
+        }
+        catch (Exception ex)
+        {
+            ReportOnce("storage move", ex);
 
             return 0;
         }
@@ -260,6 +324,7 @@ internal sealed class GamePackages : IPackageGame
         var role = agents?.GetLeadingRole();
 
         _linedUpConfigs.Clear();
+        _storageOwners.Clear();
 
         if (world == null || config == null || agents == null || role == null || !IsAfterDisaster(world)) return new PackageRead.NoGame();
 
@@ -275,14 +340,18 @@ internal sealed class GamePackages : IPackageGame
 
         var bag = ReadBag(items, config, role.InstanceId);
         var floor = ReadFloor(drops, config);
+        var storageAccess = ReadStorageAccess();
+        var storages = storageAccess == StorageAccess.Off ? Array.Empty<Package>() : ReadStorages(agents, items, config);
         var freeSpots = PackageRules.FreeSpots(build.GetPurchaseCount(), build.GetMaxCapacity(), build.GetFreePackagePointCount());
-        var alreadyQueued = bag.Select(package => package.ConfigId).Distinct().Sum(configId => actions.CountPendingItemUses(role.InstanceId, configId));
+        var alreadyQueued = bag.Concat(storages).Select(package => package.ConfigId).Distinct().Sum(configId => actions.CountPendingItemUses(role.InstanceId, configId));
         var queueOnStart = ReadQueueOnStart(role, actions);
         var isHome = IsHome(agents);
 
-        _log($"stock: {Units(bag)} in the bag, {Units(floor)} on the floor at home, {freeSpots} free spots, {alreadyQueued} already lined up, start {queueOnStart}, at home {isHome}");
+        _log(
+            $"stock: {Units(bag)} in the bag, {Units(floor)} on the floor at home, {Units(storages)} in {_storageOwners.Values.Distinct().Count()} storage(s) ({storageAccess}), "
+            + $"{freeSpots} free spots, {alreadyQueued} already lined up, start {queueOnStart}, at home {isHome}");
 
-        return new PackageRead.Ready(new PackageStock(freeSpots, alreadyQueued, isHome, bag, floor, queueOnStart));
+        return new PackageRead.Ready(new PackageStock(freeSpots, alreadyQueued, isHome, bag, floor, queueOnStart, storages, storageAccess));
     }
 
     /// <summary>
@@ -365,6 +434,72 @@ internal sealed class GamePackages : IPackageGame
     }
 
     private static bool IsSameDrop(DropItem? found, DropItem drop) => found != null && found.Pointer == drop.Pointer;
+
+    /// <summary>
+    /// Packages in the home's storages: every furniture with a bag on the home map, as the game's own list for building
+    /// and crafting from storage gives them, less the ones that list leaves out (locked storages and the bins of a brew
+    /// barrel, shredder, compressor, dye vat or greenhouse) and the drone hub and drones, whose bags hold trade cargo.
+    /// A storage that cannot be read is skipped. Each package's storage is kept for the move.
+    /// </summary>
+    private IReadOnlyList<Package> ReadStorages(AgentManager agents, ItemManager items, ConfigManager config)
+    {
+        var found = agents.GetFurnituresWithBag(agents.GetHomeMapId(), true, true);
+        var packages = new List<Package>();
+
+        for (var i = 0; found != null && i < found.Count; i++)
+        {
+            var storage = found[i];
+
+            if (storage == null || ItemManager.IsExcludedFromCostPool(storage.InstanceId) || IsDroneBay(storage)) continue;
+
+            foreach (var package in ReadBag(items, config, storage.InstanceId))
+            {
+                _storageOwners[package.ItemId] = storage.InstanceId;
+                packages.Add(package);
+            }
+        }
+
+        return packages;
+    }
+
+    private static bool IsDroneBay(Furniture furniture) =>
+        StrangerTradeActiveManager.IsDroneHub(furniture.AgentConfigId) || StrangerTradeActiveManager.TripOf(furniture) != null;
+
+    /// <summary>Storages are only touched with the config on, and only moved from while no other window is open.</summary>
+    private StorageAccess ReadStorageAccess()
+    {
+        if (!_includeStorages) return StorageAccess.Off;
+
+        return IsOtherWindowOpen() ? StorageAccess.PanelOpen : StorageAccess.Allowed;
+    }
+
+    /// <summary>
+    /// True when any window other than the player's own bag is open: a storage (the bag screen showing two bags), a
+    /// workstation, shop or trade panel the container hotkeys know, or any window the Escape key would close. Moving
+    /// items under such a window could leave it showing stacks that are gone. A check that fails counts as open.
+    /// </summary>
+    private bool IsOtherWindowOpen()
+    {
+        try
+        {
+            var ui = GameSingleton.Existing<ReduxUISystem>();
+
+            if (ui == null) return true;
+            if (ui.HasModalUIOpenExcept(Il2CppType.Of<WebUI_BackpackUI>())) return true;
+            if (OtherPanels.Any(panel => ui.IsUIActive(panel()))) return true;
+            if (!ui.IsUIActive(Il2CppType.Of<WebUI_BackpackUI>())) return false;
+
+            var bagScreen = ui.GetState<State_Web_BackpackUI>(Il2CppType.Of<State_Web_BackpackUI>());
+
+            return bagScreen == null || bagScreen.IsDualBag;
+        }
+        catch (Exception ex)
+        {
+            ReportOnce("window check", ex);
+
+            return true;
+        }
+    }
 
     /// <summary>
     /// Away from home the floor pickup would reach across maps, so a failed check counts as away and leaves the floor
