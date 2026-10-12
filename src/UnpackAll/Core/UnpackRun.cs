@@ -6,8 +6,8 @@ namespace UnpackAll.Core;
 
 /// <summary>
 /// One press of Unpack All. Packages already in the bag go first; packages on the floor at home are picked up while
-/// spots are left after that, and packages in the home's storages are moved into the bag while spots are still left
-/// after the floor. Only as many unpacks are lined up as the home has free package spots, so every one of them can run
+/// spots are left after that, and stacks in the home's storages that fit the spots still left after the floor are
+/// moved into the bag. Only as many unpacks are lined up as the home has free package spots, so every one of them can run
 /// and none sits in the queue bar waiting to fail. Everything else stays where it is and is counted by the reason it
 /// was left.
 /// </summary>
@@ -30,12 +30,12 @@ public static class UnpackRun
 
     private static UnpackOutcome Unpack(IPackageGame game, PackageStock stock)
     {
-        // Unpacks still lined up hold spots the free count does not show until each one runs, so a second batch would
-        // line up unpacks with no spot left to land in.
         var hasLookedInStorages = stock.StorageAccess != StorageAccess.Off;
         // Storages the config turned off are never touched, whatever the read handed over.
         var storages = hasLookedInStorages ? stock.Storages : Array.Empty<Package>();
 
+        // Unpacks still lined up hold spots the free count does not show until each one runs, so a second batch would
+        // line up unpacks with no spot left to land in.
         if (stock.AlreadyQueued > 0) return new UnpackOutcome.AlreadyUnpacking(stock.AlreadyQueued);
         if (Units(stock.Bag) + Units(stock.Floor) + Units(storages) == 0) return new UnpackOutcome.NothingToUnpack(hasLookedInStorages);
         // Actions the player queued are never traded for unpacks, so this is checked before anything leaves the floor.
@@ -97,6 +97,8 @@ public static class UnpackRun
         private int _storageRefused;
         private int _storageAway;
         private int _storageBehindPanel;
+        private int _storageUnchecked;
+        private int _storageTooBig;
         private int _unusable;
         private string? _unusableReason;
 
@@ -117,7 +119,8 @@ public static class UnpackRun
 
         /// <summary>
         /// Gives each package a spot until none are left. The game's use check runs only while a spot is free, so a
-        /// refused package hands its spot to the next one.
+        /// refused package hands its spot to the next one. A brought package left without a spot is not counted here:
+        /// the tally already says it waits in the bag.
         /// </summary>
         public void Choose(IEnumerable<Package> packages, bool isBrought)
         {
@@ -129,7 +132,8 @@ public static class UnpackRun
 
                 if (_spotsLeft == 0)
                 {
-                    _noSpot += units;
+                    if (!isBrought) _noSpot += units;
+
                     continue;
                 }
 
@@ -141,7 +145,8 @@ public static class UnpackRun
 
                 var taken = Math.Min(units, _spotsLeft);
                 _spotsLeft -= taken;
-                _noSpot += units - taken;
+
+                if (!isBrought) _noSpot += units - taken;
 
                 _chosen.Add(new Chosen(package with { Count = taken }, isBrought));
             }
@@ -169,10 +174,11 @@ public static class UnpackRun
         }
 
         /// <summary>
-        /// Moves storage packages into the bag while the ones moved have not yet filled the spots the floor left, then
-        /// chooses among the packages that arrived. Like the floor pickup, the game's move takes a whole stack, so one
-        /// bigger than the spots left uses them and the rest wait in the bag. A package the game would not let the
-        /// character use stays in its storage, and nothing is moved away from home or while another window is open.
+        /// Moves storage stacks that fit the spots the floor left into the bag, smallest first so a big stack cannot
+        /// crowd out several small ones, then chooses among the packages that arrived. The game's move takes a whole
+        /// stack, so unlike the floor a stack bigger than the spots left is never moved: it stays in its storage
+        /// rather than spilling the extra packages into the bag. A package the game would not let the character use
+        /// stays in its storage, and nothing is moved away from home or while another window may be open.
         /// </summary>
         public void TakeFromStorages(IReadOnlyList<Package> storages, bool isHome, StorageAccess access)
         {
@@ -187,7 +193,8 @@ public static class UnpackRun
 
             var bagBefore = _game.BagPackages();
 
-            foreach (var stored in storages) TakeFromStorage(stored, access);
+            // OrderBy is stable, so stacks of one size keep the order the game listed them in.
+            foreach (var stored in storages.OrderBy(package => package.Count)) TakeFromStorage(stored, access);
 
             if (FromStorage > 0) Choose(Arrivals(bagBefore, _game.BagPackages()), isBrought: true);
         }
@@ -244,7 +251,9 @@ public static class UnpackRun
                 FromStorage,
                 _storageRefused,
                 _storageAway,
-                _storageBehindPanel);
+                _storageBehindPanel,
+                _storageUnchecked,
+                _storageTooBig);
         }
 
         /// <summary>Takes a whole floor stack while any spot is still unclaimed by an earlier pickup, even when the stack overshoots it.</summary>
@@ -267,10 +276,11 @@ public static class UnpackRun
         }
 
         /// <summary>
-        /// Takes a whole storage stack while any spot is still unclaimed by an earlier move, even when the stack
-        /// overshoots it. The use check runs first, so a package the character could not use never leaves its storage.
-        /// With another window open the stack stays put but still claims its spots, so the count said to wait behind
-        /// the window is what a press with the window closed would move.
+        /// Takes a whole storage stack only when it fits the spots no earlier move has claimed. A stack bigger than all
+        /// the spots the bag and the floor left could never fit this press and is counted as too big; one that only no
+        /// longer fits is counted as having no spot. The use check runs next, so a package the character could not use
+        /// never leaves its storage. When a window is open or could not be checked the stack stays put but still claims
+        /// its spots, so the count said to wait is what a press with the window closed would move.
         /// </summary>
         private void TakeFromStorage(Package stored, StorageAccess access)
         {
@@ -278,7 +288,21 @@ public static class UnpackRun
 
             if (units == 0) return;
 
-            if (_storageClaimed >= _spotsLeft)
+            if (_spotsLeft == 0)
+            {
+                _noSpot += units;
+
+                return;
+            }
+
+            if (units > _spotsLeft)
+            {
+                _storageTooBig += units;
+
+                return;
+            }
+
+            if (units > _spotsLeft - _storageClaimed)
             {
                 _noSpot += units;
 
@@ -294,8 +318,7 @@ public static class UnpackRun
 
             if (access != StorageAccess.Allowed)
             {
-                _storageBehindPanel += units;
-                _storageClaimed += units;
+                CountUntaken(units, access);
 
                 return;
             }
@@ -304,6 +327,14 @@ public static class UnpackRun
             FromStorage += moved;
             _storageClaimed += moved;
             _storageRefused += units - moved;
+        }
+
+        private void CountUntaken(int units, StorageAccess access)
+        {
+            if (access == StorageAccess.Unknown) _storageUnchecked += units;
+            else _storageBehindPanel += units;
+
+            _storageClaimed += units;
         }
 
         private void CountUnusable(int units, string reason)

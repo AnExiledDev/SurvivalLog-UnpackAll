@@ -6,7 +6,7 @@ Unpacking furniture packages one at a time is slow, and lining up too many fills
 
 [size=5]Main features[/size]
 [list]
-[*][b]Bag first, then the floor, then storages[/b]: packages on the floor at home are picked up, then packages in your storages at home are taken out, and unpacked while spots are left. Storages can be turned off in the config.[/*]
+[*][b]Bag first, then the floor, then storages[/b]: packages on the floor at home are picked up, then packages in the storages at home you can see are taken out, and unpacked while spots are left. Storages can be turned off in the config.[/*]
 [*][b]Never more than fits[/b]: only as many unpacks as your home has free package spots. The rest stay where they are.[/*]
 [*][b]Game's own Use action[/b]: the same action as the inventory's Use button, with the game's checks and timings.[/*]
 [*][b]Your queued actions stay[/b]: unpacks join the end of the queue, so your own actions run first.[/*]
@@ -27,8 +27,8 @@ The mod adds no data of its own to your save, but the unpacks are real: packages
 [*]Back up your save before trying it for the first time.[/*]
 [*]Packages beyond your free package spots stay where they are. Place some furniture, then press again.[/*]
 [*]Floor and storage packages are only taken while you are at home, and nothing leaves a storage while a storage, workbench or shop window is open.[/*]
-[*]Locked storages, the drone hub and drones, and workstation bins are never touched.[/*]
-[*]The game moves a floor or storage stack whole, so some packages can end up waiting in your bag for the next press.[/*]
+[*]Locked storages, the drone hub and drones, the neighbour gift basket, the door box and workstation bins are never touched.[/*]
+[*]The game picks up a floor stack whole, so some packages can end up waiting in your bag for the next press. A storage stack bigger than your free spots stays in its storage.[/*]
 [*]The game's own refusal reasons can show in Chinese.[/*]
 [/list]
 If you run into anything strange, please tell me (see Feedback below).

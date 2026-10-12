@@ -78,9 +78,9 @@ public class OutcomeMessageTests
     [Fact]
     public void Picked_up_packages_that_were_not_unpacked_are_said_to_be_waiting_in_the_bag()
     {
-        var outcome = Done(queued: 1, pickedUp: 5, waitingInBag: 4, noSpot: 4);
+        var outcome = Done(queued: 1, pickedUp: 5, waitingInBag: 4, noSpot: 2);
 
-        Assert.Equal("Unpacking 1 package. Picked up 5 from the floor, 4 waiting in your bag. 4 left: no free package spot at home.", OutcomeMessage.Describe(outcome));
+        Assert.Equal("Unpacking 1 package. Picked up 5 from the floor, 4 waiting in your bag. 2 left: no free package spot at home.", OutcomeMessage.Describe(outcome));
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class OutcomeMessageTests
     public void Packages_taken_from_storages_say_where_they_came_from_and_how_many_wait_in_the_bag()
     {
         Assert.Equal("Unpacking 2 packages. Took 2 from storages.", OutcomeMessage.Describe(Done(queued: 2, fromStorage: 2)));
-        Assert.Equal("Unpacking 1 package. Took 3 from storages, 2 waiting in your bag. 2 left: no free package spot at home.", OutcomeMessage.Describe(Done(queued: 1, fromStorage: 3, waitingInBag: 2, noSpot: 2)));
+        Assert.Equal("Unpacking 1 package. Took 3 from storages, 2 waiting in your bag.", OutcomeMessage.Describe(Done(queued: 1, fromStorage: 3, waitingInBag: 2)));
         Assert.Equal(
             "Unpacking 2 packages. Picked up 1 from the floor and took 2 from storages, 1 waiting in your bag.",
             OutcomeMessage.Describe(Done(queued: 2, pickedUp: 1, fromStorage: 2, waitingInBag: 1)));
@@ -104,10 +104,11 @@ public class OutcomeMessageTests
     [Fact]
     public void Every_reason_a_package_stayed_in_a_storage_is_counted()
     {
-        var outcome = Done(storageRefused: 1, storageAway: 2, storageBehindPanel: 3);
+        var outcome = Done(storageRefused: 1, storageAway: 2, storageBehindPanel: 3, storageUnchecked: 4, storageTooBig: 5);
 
         Assert.Equal(
-            "Nothing unpacked. 1 left in storages: your bag could not carry it. 2 in storages at home: go home to unpack them. 3 left in storages: close the open window and press again.",
+            "Nothing unpacked. 1 left in storages: your bag could not carry it. 2 in storages at home: go home to unpack them. 3 left in storages: close the open window and press again. "
+            + "4 left in storages: could not check for open windows, see BepInEx/unpack-all.log. 5 left in storages: a stack is bigger than the free package spots.",
             OutcomeMessage.Describe(outcome));
     }
 
@@ -171,7 +172,24 @@ public class OutcomeMessageTests
         int fromStorage = 0,
         int storageRefused = 0,
         int storageAway = 0,
-        int storageBehindPanel = 0) =>
+        int storageBehindPanel = 0,
+        int storageUnchecked = 0,
+        int storageTooBig = 0) =>
         new UnpackOutcome.Done(
-            new UnpackTally(queued, pickedUp, waitingInBag, noSpot, floorRefused, floorAway, unusable, unusableReason, dropped, fromStorage, storageRefused, storageAway, storageBehindPanel));
+            new UnpackTally(
+                queued,
+                pickedUp,
+                waitingInBag,
+                noSpot,
+                floorRefused,
+                floorAway,
+                unusable,
+                unusableReason,
+                dropped,
+                fromStorage,
+                storageRefused,
+                storageAway,
+                storageBehindPanel,
+                storageUnchecked,
+                storageTooBig));
 }

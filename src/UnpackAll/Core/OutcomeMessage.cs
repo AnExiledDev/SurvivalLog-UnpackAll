@@ -43,6 +43,8 @@ public static class OutcomeMessage
         if (tally.FloorAway > 0) lines.Add($"{tally.FloorAway} on the floor at home: go home to pick {ItOrThem(tally.FloorAway)} up.");
         if (tally.StorageAway > 0) lines.Add($"{tally.StorageAway} in storages at home: go home to unpack {ItOrThem(tally.StorageAway)}.");
         if (tally.StorageBehindPanel > 0) lines.Add($"{tally.StorageBehindPanel} left in storages: close the open window and press again.");
+        if (tally.StorageUnchecked > 0) lines.Add($"{tally.StorageUnchecked} left in storages: could not check for open windows, {SeeLog}");
+        if (tally.StorageTooBig > 0) lines.Add($"{tally.StorageTooBig} left in storages: a stack is bigger than the free package spots.");
         if (tally.Unusable > 0) lines.Add(UnusableLine(tally.Unusable, tally.UnusableReason));
 
         return string.Join(" ", lines);

@@ -6,11 +6,11 @@ Unpacking furniture packages one at a time is slow, and lining up more unpacks t
 
 ## Features
 
-- **Bag first, then the floor, then storages**: packages in your bag are unpacked first. If spots are left over, packages on the floor inside your home are picked up into your bag and unpacked as well. If spots are still left after that, packages in your storages at home are moved into your bag and unpacked. This last step can be turned off in the config.
+- **Bag first, then the floor, then storages**: packages in your bag are unpacked first. If spots are left over, packages on the floor inside your home are picked up into your bag and unpacked as well. If spots are still left after that, packages in the storages at home you can see are moved into your bag and unpacked, as long as their stack fits the spots left. This last step can be turned off in the config.
 - **Never more than fits**: only as many unpacks are lined up as your home has free package spots, so every one of them can run and the queue bar never fills with unpacks that would fail. The rest stay where they are.
 - **The game's own Use action**: each unpack is the same action the inventory's Use button lines up, so the game's own checks and timings apply. Like the Use button, it sends your character to the package point nearest them first.
 - **Your queued actions stay**: unpacks join the end of your character's action queue, so actions you queued yourself run first.
-- **Clear messages**: a short message at the bottom of the screen says how many packages are unpacking, how many were picked up from the floor or taken from storages (and how many of those wait in your bag), and how many were left and why: no free package spot, your bag could not carry it, you are away from home, a window is open, or the game's own reason for refusing.
+- **Clear messages**: a short message at the bottom of the screen says how many packages are unpacking, how many were picked up from the floor or taken from storages (and how many of those wait in your bag), and how many were left and why: no free package spot, a storage stack bigger than your free spots, your bag could not carry it, you are away from home, a window is open (or could not be checked), or the game's own reason for refusing.
 - **Follows up**: after starting, the mod checks that the unpacks really reached your character's queue and watches them until they are done. An unpack the game drops is never counted as unpacking: the message says how many were dropped, and a later message says so if an unpack ends without opening its package.
 - **Mods menu entry**: **Unpack all** in the inventory's Mods menu does the same as the key (see below).
 - **Log file**: every press, what was read and lined up, and how each batch ended, is written to `BepInEx\unpack-all.log`.
@@ -21,7 +21,7 @@ Unpack All adds no data of its own to your save. The unpacks are real: packages 
 
 | Key | What it does |
 | --- | --- |
-| `F9` | Unpacks every package in your bag, then the ones on the floor at home, then the ones in your storages at home, up to your free package spots. |
+| `F9` | Unpacks every package in your bag, then the ones on the floor at home and, if `IncludeStorages` is on, the ones in storages at home, up to your free package spots. |
 
 `F9` works anywhere in a loaded game past the prologue. On the title screen and in the prologue it does nothing. It can be changed or turned off in the config.
 
@@ -35,11 +35,11 @@ The mod's menu entry and messages are in English. The game's own refusal reasons
 
 ## How it works
 
-Each press reads your bag, the floor at home, your storages at home and your home's free package spots. Packages in the bag get spots first. Then, if you are at home, floor packages are picked up while spots are left, and the ones that arrive in your bag get the remaining spots. Then storage packages are moved into your bag while spots are still left, the same way a click moves them with the storage open, and they get the spots that remain. Wave loot on the floor is left for the game's drone.
+Each press reads your bag, the floor at home, your storages at home and your home's free package spots. Packages in the bag get spots first. Then, if you are at home, floor packages are picked up while spots are left, and the ones that arrive in your bag get the remaining spots. Then storage stacks that fit the spots still left are moved into your bag, smallest first, the same way a click moves them with the storage open, and they get the spots that remain. Wave loot on the floor is left for the game's drone.
 
-Storages means every storage at home the game lets you build and craft from. Locked storages, the drone hub and drones, and the bins of a brew barrel, shredder, compressor, dye vat or greenhouse are left alone. A package the game would refuse to unpack stays in its storage.
+Storages means the storages at home you can see. Locked storages, the drone hub and drones, the neighbour gift basket, the door box, and the bins of a brew barrel, shredder, compressor, dye vat or greenhouse are left alone. A package the game would refuse to unpack stays in its storage.
 
-Nothing is taken out of a storage while a storage, workbench, shop or trade window is open; close it and press again. Your own bag being open is fine.
+Nothing is taken out of a storage while a storage, workbench, shop or trade window is open; close it and press again. Your own bag being open is fine. If the mod cannot tell which windows are open, it takes nothing out of storages and the message says to see the log.
 
 While unpacks from an earlier press are still lined up, another press does nothing but say so: their spots are only freed as each one runs, so a second batch would have nowhere to go.
 
@@ -50,7 +50,7 @@ This mod picks up items from the floor and unpacks them. Back up your save befor
 - Packages beyond your free package spots stay in your bag, on the floor or in your storages. Place some furniture to free spots, then press again.
 - Floor and storage packages are only taken while you are at home.
 - Storage packages are taken only after the bag and the floor, so they never take a spot a floor package could use.
-- The game moves a storage stack whole, like a floor stack. When packages stack and a storage stack holds more packages than the spots left, all of it comes into your bag, and the extra ones wait there for the next press.
+- The game moves a storage stack whole and cannot be asked for part of one. When packages stack, a storage stack that holds more packages than the spots left stays in its storage, and smaller stacks go first. The message says how many were left for this reason.
 - If your bag is too heavy or full for a storage stack, it stays in its storage and the message says so.
 - The game picks up a floor stack whole. When packages stack and a floor stack holds more packages than the spots left, all of it comes into your bag: as many as there are spots unpack, and the message says how many wait in your bag for the next press.
 - A floor package the game refuses to unpack once it is in your bag stays in your bag; its spot goes to another package on the next press, not this one.
