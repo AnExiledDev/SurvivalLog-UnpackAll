@@ -35,7 +35,7 @@ The mod's menu entry and messages are in English. The game's own refusal reasons
 
 ## How it works
 
-Each press reads your bag, the floor at home, your storages at home and your home's free package spots. Packages in the bag get spots first. Then, if you are at home, floor packages are picked up while spots are left, and the ones that arrive in your bag get the remaining spots. Then storage stacks that fit the spots still left are moved into your bag, smallest first, the same way a click moves them with the storage open, and they get the spots that remain. Wave loot on the floor is left for the game's drone.
+Each press reads your bag, the floor at home, your storages at home and your home's free package spots. Packages in the bag get spots first. Then, if you are at home, floor packages are picked up while spots are left, and the ones that arrive in your bag get the remaining spots. Then the storage stacks that together fill the most of the spots still left are moved into your bag, whole, the same way a click moves them with the storage open, and they get the spots that remain. Wave loot on the floor is left for the game's drone.
 
 Storages means the storages at home you can see. Locked storages, the drone hub and drones, the neighbour gift basket, the door box, and the bins of a brew barrel, shredder, compressor, dye vat or greenhouse are left alone. A package the game would refuse to unpack stays in its storage.
 
@@ -50,7 +50,7 @@ This mod picks up items from the floor and unpacks them. Back up your save befor
 - Packages beyond your free package spots stay in your bag, on the floor or in your storages. Place some furniture to free spots, then press again.
 - Floor and storage packages are only taken while you are at home.
 - Storage packages are taken only after the bag and the floor, so they never take a spot a floor package could use.
-- The game moves a storage stack whole and cannot be asked for part of one. When packages stack, a storage stack that holds more packages than the spots left stays in its storage, and smaller stacks go first. The message says how many were left for this reason.
+- The game moves a storage stack whole and cannot be asked for part of one. When packages stack, a storage stack that holds more packages than the spots left stays in its storage, and the stacks that fill the most spots go instead. The message says how many were left because their stack was too big.
 - If your bag is too heavy or full for a storage stack, it stays in its storage and the message says so.
 - The game picks up a floor stack whole. When packages stack and a floor stack holds more packages than the spots left, all of it comes into your bag: as many as there are spots unpack, and the message says how many wait in your bag for the next press.
 - A floor package the game refuses to unpack once it is in your bag stays in your bag; its spot goes to another package on the next press, not this one.
