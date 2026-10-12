@@ -1,7 +1,7 @@
 // Unpack All's web half. Runs in Root.html, the document every game page iframe sits in. Adds an "Unpack all" button
-// to the inventory's toolbar, styled by the game's own button classes so it reads as part of the game, and shows the
-// result of a press as a short toast. Talks to the plugin through vuplex.postMessage("slmod|unpackall|<verb>") and is
-// driven by window.__slunpackall.
+// to the inventory's toolbar, built like the game's own toolbar buttons (their classes, an svg icon and a btn-txt
+// label) so it reads as part of the game, and shows the result of a press as a short toast. Talks to the plugin
+// through vuplex.postMessage("slmod|unpackall|<verb>") and is driven by window.__slunpackall.
 (function () {
   if (window.__slunpackall) return;
 
@@ -10,6 +10,9 @@
   var OTHER_MOD_BUTTONS = ['sh-putaway-btn', 'sh-floor-btn'];
   var BUSY_TIMEOUT_MS = 5000;
   var TOAST_MS = 3500;
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  // An arrow rising out of an open box, drawn on the 24-unit grid the game's toolbar icons use.
+  var ICON_PATH = 'M4 10h4v2H6v8h12v-8h-2v-2h4v12H4zM12 2l5 5h-3v8h-4V7H7z';
 
   var isBusy = false;
   var busyTimer = 0;
@@ -133,7 +136,8 @@
 
     var node = doc.createElement('button');
     node.className = 'action-btn unity-interactive ' + BUTTON_CLASS;
-    node.textContent = 'Unpack all';
+    node.appendChild(icon(doc));
+    node.appendChild(label(doc, 'Unpack all'));
     node.title = 'Unpack every package in your bag, then the ones on the floor at home, up to your free package spots';
     node.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -141,6 +145,26 @@
     });
 
     bar.insertBefore(node, firstGameButton(bar));
+  }
+
+  function icon(doc) {
+    var svg = doc.createElementNS(SVG_NS, 'svg');
+    var path = doc.createElementNS(SVG_NS, 'path');
+
+    svg.setAttribute('viewBox', '0 0 24 24');
+    path.setAttribute('d', ICON_PATH);
+    svg.appendChild(path);
+
+    return svg;
+  }
+
+  function label(doc, text) {
+    var span = doc.createElement('span');
+
+    span.className = 'btn-txt';
+    span.textContent = text;
+
+    return span;
   }
 
   // The game's sort button, so ours sits just before it, after any other mod's buttons; the discard button is skipped.

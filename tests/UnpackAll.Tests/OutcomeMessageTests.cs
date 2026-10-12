@@ -64,9 +64,48 @@ public class OutcomeMessageTests
     {
         Assert.Equal("Can't unpack right now: load a save first.", OutcomeMessage.Describe(new UnpackOutcome.NotReady("load a save first")));
         Assert.Equal("No packages in your bag or on the floor at home.", OutcomeMessage.Describe(new UnpackOutcome.NothingToUnpack()));
-        Assert.Equal("Could not start unpacking, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(new UnpackOutcome.StartFailed(2)));
+        Assert.Equal("Could not start unpacking, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(new UnpackOutcome.StartFailed(2, 0)));
+        Assert.Equal("Finish or cancel your queued actions first.", OutcomeMessage.Describe(new UnpackOutcome.QueueBusy()));
     }
 
-    private static UnpackOutcome Done(int queued = 0, int pickedUp = 0, int noSpot = 0, int floorRefused = 0, int floorAway = 0, int unusable = 0, string? unusableReason = null) =>
-        new UnpackOutcome.Done(new UnpackTally(queued, pickedUp, noSpot, floorRefused, floorAway, unusable, unusableReason));
+    [Fact]
+    public void A_press_outside_a_loaded_game_says_nothing()
+    {
+        Assert.Null(OutcomeMessage.Describe(new UnpackOutcome.NoGame()));
+    }
+
+    [Fact]
+    public void Picked_up_packages_that_were_not_unpacked_are_said_to_be_waiting_in_the_bag()
+    {
+        var outcome = Done(queued: 1, pickedUp: 5, waitingInBag: 4, noSpot: 4);
+
+        Assert.Equal("Unpacking 1 package. Picked up 5 from the floor, 4 waiting in your bag. 4 left: no free package spot at home.", OutcomeMessage.Describe(outcome));
+    }
+
+    [Fact]
+    public void A_start_that_failed_after_a_pickup_says_where_the_picked_up_packages_are()
+    {
+        Assert.Equal(
+            "Could not start unpacking, see BepInEx/unpack-all.log. Picked up 2 from the floor, 2 waiting in your bag.",
+            OutcomeMessage.Describe(new UnpackOutcome.StartFailed(3, 2)));
+    }
+
+    [Theory]
+    [InlineData("<color=#ff0000>Not while fighting</color>.", "Not while fighting")]
+    [InlineData("<b>Not</b> while <i>fighting</i>", "Not while fighting")]
+    [InlineData("<#FF5555>Not while fighting</color>!", "Not while fighting")]
+    [InlineData("<color=#FF5555>不能在战斗中使用</color>。", "不能在战斗中使用")]
+    public void The_game_reason_loses_the_rich_text_tags_its_own_ui_would_render(string reason, string shown)
+    {
+        Assert.Equal($"Nothing unpacked. 1 can't be unpacked right now: {shown}.", OutcomeMessage.Describe(Done(unusable: 1, unusableReason: reason)));
+    }
+
+    [Fact]
+    public void A_not_ready_reason_loses_its_rich_text_tags_too()
+    {
+        Assert.Equal("Can't unpack right now: your home is not loaded.", OutcomeMessage.Describe(new UnpackOutcome.NotReady("<color=red>your home is not loaded</color>")));
+    }
+
+    private static UnpackOutcome Done(int queued = 0, int pickedUp = 0, int waitingInBag = 0, int noSpot = 0, int floorRefused = 0, int floorAway = 0, int unusable = 0, string? unusableReason = null) =>
+        new UnpackOutcome.Done(new UnpackTally(queued, pickedUp, waitingInBag, noSpot, floorRefused, floorAway, unusable, unusableReason));
 }

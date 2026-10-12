@@ -41,8 +41,12 @@ internal sealed class WebPage
         if (Run(Script())) _log("page script sent to the web UI");
     }
 
-    /// <summary>The result of a press, as a toast over the game.</summary>
-    public void Status(string text) => Run($"window.__slunpackall?window.__slunpackall.status({JsText.Literal(text)}):{NoScriptReply}");
+    /// <summary>
+    /// The result of a press, as a toast over the game. The script travels with it, so a page that reloaded since the
+    /// last check still shows the toast, and so does one whose missing-script note never reached the mod. The script's
+    /// own guard makes the copy a no-op when it is already there.
+    /// </summary>
+    public void Status(string text) => Run(Script() + "\n;window.__slunpackall&&window.__slunpackall.status(" + JsText.Literal(text) + ");");
 
     private bool Run(string javaScript)
     {

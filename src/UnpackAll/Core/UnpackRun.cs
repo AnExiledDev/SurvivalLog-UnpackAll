@@ -5,8 +5,8 @@ using System.Linq;
 namespace UnpackAll.Core;
 
 /// <summary>
-/// One press of Unpack All. Packages already in the bag go first; packages on the floor at home are picked up only for
-/// the spots left after that. Only as many unpacks are lined up as the home has free package spots, so every one of
+/// One press of Unpack All. Packages already in the bag go first; packages on the floor at home are picked up while
+/// spots are left after that. Only as many unpacks are lined up as the home has free package spots, so every one of
 /// them can run and none sits in the queue bar waiting to fail. Everything else stays where it is and is counted by
 /// the reason it was left.
 /// </summary>
@@ -20,6 +20,7 @@ public static class UnpackRun
 
         return read switch
         {
+            PackageRead.NoGame => new UnpackOutcome.NoGame(),
             PackageRead.NotReady notReady => new UnpackOutcome.NotReady(notReady.Reason),
             PackageRead.Ready ready => Unpack(game, ready.Stock),
             _ => throw new InvalidOperationException("unknown package read " + read),
@@ -28,21 +29,24 @@ public static class UnpackRun
 
     private static UnpackOutcome Unpack(IPackageGame game, PackageStock stock)
     {
-        // Starting a second batch would restart the first one: the game drops the character's current action when it
-        // starts lined-up actions, so the unpack in progress would lose its time and the queue bar would refill.
+        // Unpacks still lined up hold spots the free count does not show until each one runs, so a second batch would
+        // line up unpacks with no spot left to land in.
         if (stock.AlreadyQueued > 0) return new UnpackOutcome.AlreadyUnpacking(stock.AlreadyQueued);
         if (Units(stock.Bag) + Units(stock.Floor) == 0) return new UnpackOutcome.NothingToUnpack();
+        // Actions the player queued are never traded for unpacks, so this is checked before anything leaves the floor.
+        if (stock.QueueOnStart == QueueOnStart.ReplacesPlayerActions) return new UnpackOutcome.QueueBusy();
 
         var press = new Press(game, stock.FreeSpots);
 
-        press.Choose(stock.Bag);
+        press.Choose(stock.Bag, isFromFloor: false);
         press.TakeFromFloor(stock.Bag, stock.Floor, stock.IsHome);
         press.QueueChosen();
 
-        // Starting with nothing lined up would only cancel whatever the character is doing.
+        // Starting with nothing lined up does nothing useful: the game logs an error, and when starting replaces the
+        // queue it first cancels whatever the character is doing.
         if (press.Queued == 0) return new UnpackOutcome.Done(press.Tally());
 
-        return game.TryStart() ? new UnpackOutcome.Done(press.Tally()) : new UnpackOutcome.StartFailed(press.Queued);
+        return game.TryStart() ? new UnpackOutcome.Done(press.Tally()) : new UnpackOutcome.StartFailed(press.Queued, press.PickedUp);
     }
 
     private static int Units(IEnumerable<Package> packages) => packages.Sum(package => Math.Max(0, package.Count));
@@ -63,13 +67,16 @@ public static class UnpackRun
         }
     }
 
+    /// <summary>A package given spots, and whether it came up off the floor in this press.</summary>
+    private readonly record struct Chosen(Package Package, bool IsFromFloor);
+
     /// <summary>The spots one press hands out, the packages chosen for them, and the count of every package left.</summary>
     private sealed class Press
     {
         private readonly IPackageGame _game;
-        private readonly List<Package> _chosen = new();
+        private readonly List<Chosen> _chosen = new();
         private int _spotsLeft;
-        private int _pickedUp;
+        private int _queuedFromFloor;
         private int _noSpot;
         private int _floorRefused;
         private int _floorAway;
@@ -84,13 +91,18 @@ public static class UnpackRun
 
         public int Queued { get; private set; }
 
+        public int PickedUp { get; private set; }
+
+        /// <summary>Picked-up packages that were not lined up: the surplus of a stack bigger than the spots, and any the game refused.</summary>
+        private int WaitingInBag => Math.Max(0, PickedUp - _queuedFromFloor);
+
         /// <summary>
-        /// Gives each package in the bag a spot until none are left. The game's use check runs only while a spot is
-        /// free, so a refused package hands its spot to the next one.
+        /// Gives each package a spot until none are left. The game's use check runs only while a spot is free, so a
+        /// refused package hands its spot to the next one.
         /// </summary>
-        public void Choose(IEnumerable<Package> bag)
+        public void Choose(IEnumerable<Package> packages, bool isFromFloor)
         {
-            foreach (var package in bag)
+            foreach (var package in packages)
             {
                 var units = Math.Max(0, package.Count);
 
@@ -112,13 +124,15 @@ public static class UnpackRun
                 _spotsLeft -= taken;
                 _noSpot += units - taken;
 
-                _chosen.Add(package with { Count = taken });
+                _chosen.Add(new Chosen(package with { Count = taken }, isFromFloor));
             }
         }
 
         /// <summary>
-        /// Picks up floor packages while picked-up ones have not yet filled the spots left, then chooses among the
-        /// packages that arrived in the bag. Nothing leaves the floor once the spots are spoken for, and nothing is
+        /// Picks up floor packages while the ones picked up have not yet filled the spots left, then chooses among the
+        /// packages that arrived in the bag. The game's pickup takes a whole floor stack and cannot be asked for part
+        /// of one, so a stack bigger than the spots left still comes up: it uses those spots, and the packages it
+        /// brings beyond them wait in the bag. Nothing leaves the floor once the spots are spoken for, and nothing is
         /// picked up away from home, where the game's pickup would reach across maps.
         /// </summary>
         public void TakeFromFloor(IReadOnlyList<Package> bagBefore, IReadOnlyList<Package> floor, bool isHome)
@@ -132,38 +146,40 @@ public static class UnpackRun
 
             foreach (var drop in floor) PickUp(drop);
 
-            if (_pickedUp > 0) Choose(Arrivals(bagBefore, _game.BagPackages()));
+            if (PickedUp > 0) Choose(Arrivals(bagBefore, _game.BagPackages()), isFromFloor: true);
         }
 
         /// <summary>Lines up one unpack per chosen package; a package the game will not take gives up the rest of its stack.</summary>
         public void QueueChosen()
         {
-            foreach (var package in _chosen)
+            foreach (var (package, isFromFloor) in _chosen)
             {
                 for (var unit = 0; unit < package.Count; unit++)
                 {
-                    if (_game.TryQueue(package))
+                    if (!_game.TryQueue(package))
                     {
-                        Queued++;
-                        continue;
+                        CountUnusable(package.Count - unit, QueueRefusedReason);
+
+                        break;
                     }
 
-                    CountUnusable(package.Count - unit, QueueRefusedReason);
+                    Queued++;
 
-                    break;
+                    if (isFromFloor) _queuedFromFloor++;
                 }
             }
         }
 
-        public UnpackTally Tally() => new(Queued, _pickedUp, _noSpot, _floorRefused, _floorAway, _unusable, _unusableReason);
+        public UnpackTally Tally() => new(Queued, PickedUp, WaitingInBag, _noSpot, _floorRefused, _floorAway, _unusable, _unusableReason);
 
+        /// <summary>Takes a whole floor stack while any spot is still unclaimed by an earlier pickup, even when the stack overshoots it.</summary>
         private void PickUp(Package drop)
         {
             var units = Math.Max(0, drop.Count);
 
             if (units == 0) return;
 
-            if (_pickedUp >= _spotsLeft)
+            if (PickedUp >= _spotsLeft)
             {
                 _noSpot += units;
 
@@ -171,7 +187,7 @@ public static class UnpackRun
             }
 
             var picked = Math.Clamp(_game.PickUp(drop), 0, units);
-            _pickedUp += picked;
+            PickedUp += picked;
             _floorRefused += units - picked;
         }
 

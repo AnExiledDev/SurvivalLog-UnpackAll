@@ -71,8 +71,9 @@ internal sealed class UnpackSession
             var outcome = UnpackRun.Run(_game);
             var message = OutcomeMessage.Describe(outcome);
 
-            _log($"press: {outcome} -> {message}");
-            _page.Status(message);
+            _log($"press: {outcome} -> {message ?? "(no message)"}");
+
+            if (message != null) _page.Status(message);
         }
         catch (Exception ex)
         {

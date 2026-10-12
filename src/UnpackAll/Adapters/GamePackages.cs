@@ -15,7 +15,6 @@ namespace UnpackAll.Adapters;
 /// </summary>
 internal sealed class GamePackages : IPackageGame
 {
-    private const string NoSave = "load a save first";
     private const string NoWorld = "the game world is not loaded";
     private const string NoHome = "your home is not loaded";
     private const string ReadFailed = "the game could not be read, see BepInEx/unpack-all.log";
@@ -144,8 +143,8 @@ internal sealed class GamePackages : IPackageGame
 
     /// <summary>
     /// Starts the lined-up uses as one batch. When that throws, the line is cleared so the next press does not read the
-    /// stranded uses as an unpack in progress; that also drops anything else the player had lined up, which is the
-    /// lesser loss.
+    /// stranded uses as an unpack in progress. That empties only the role's not-yet-started action cache, which held
+    /// just this press's uses; actions already in the character's queue are not touched.
     /// </summary>
     public bool TryStart()
     {
@@ -171,20 +170,26 @@ internal sealed class GamePackages : IPackageGame
         }
     }
 
+    /// <summary>
+    /// Reads the press's stock. The free spot count is read as it stands, without BuildComponent.ReconcilePackagePoints
+    /// first: that is a repair pass, not a recount. It writes package points for unplaced bag furniture into the save's
+    /// PackagePointMap and logs an error whenever it finds any, and the game already runs it itself after every unpack
+    /// and every furniture purchase.
+    /// </summary>
     private PackageRead ReadStock()
     {
         var world = GameSingleton.Existing<BattleLogicWorld>();
         var config = GameSingleton.Existing<ConfigManager>();
-
-        if (world == null || config == null) return new PackageRead.NotReady(NoSave);
-
-        var agents = world._AgentManager;
+        var agents = world?._AgentManager;
         var role = agents?.GetLeadingRole();
+
+        if (world == null || config == null || agents == null || role == null || !IsAfterDisaster(world)) return new PackageRead.NoGame();
+
         var items = world._ItemManager;
         var actions = world._ActionManager;
         var drops = world._DropItemManager;
 
-        if (agents == null || role == null || items == null || actions == null || drops == null) return new PackageRead.NotReady(NoWorld);
+        if (items == null || actions == null || drops == null) return new PackageRead.NotReady(NoWorld);
 
         var build = AgentTools.GetAgentComponent<BuildComponent>(role);
 
@@ -194,11 +199,33 @@ internal sealed class GamePackages : IPackageGame
         var floor = ReadFloor(drops, config);
         var freeSpots = PackageRules.FreeSpots(build.GetPurchaseCount(), build.GetMaxCapacity(), build.GetFreePackagePointCount());
         var alreadyQueued = bag.Select(package => package.ConfigId).Distinct().Sum(configId => actions.CountPendingItemUses(role.InstanceId, configId));
+        var queueOnStart = ReadQueueOnStart(role, actions);
         var isHome = IsHome(agents);
 
-        _log($"stock: {Units(bag)} in the bag, {Units(floor)} on the floor at home, {freeSpots} free spots, {alreadyQueued} already lined up, at home {isHome}");
+        _log($"stock: {Units(bag)} in the bag, {Units(floor)} on the floor at home, {freeSpots} free spots, {alreadyQueued} already lined up, start {queueOnStart}, at home {isHome}");
 
-        return new PackageRead.Ready(new PackageStock(freeSpots, alreadyQueued, isHome, bag, floor));
+        return new PackageRead.Ready(new PackageStock(freeSpots, alreadyQueued, isHome, bag, floor, queueOnStart));
+    }
+
+    /// <summary>
+    /// False in the prologue, before the disaster. This is the game's own test (SceneRatManager.IsPostDisaster reads
+    /// the same field), done here without the game's singleton lookup.
+    /// </summary>
+    private static bool IsAfterDisaster(BattleLogicWorld world) => world._GameTimeManager?.WorldStateType == WorldStateType.PostDisaster;
+
+    /// <summary>
+    /// What starting the batch does to the character's queue. The game's start (ActionCacheComponent.DoActionCache)
+    /// clears the character's actions first only in the Default action mode; in Queue mode, which the game sets after
+    /// the prologue, the batch joins the end of the queue. A mode that cannot be read counts as Default, the one that
+    /// can lose something.
+    /// </summary>
+    private static QueueOnStart ReadQueueOnStart(LeadingRole role, ActionManager actions)
+    {
+        var mode = AgentTools.GetAgentComponent<ActionCacheComponent>(role)?.Mode ?? ActionMode.Default;
+
+        if (mode == ActionMode.Queue) return QueueOnStart.Appends;
+
+        return actions.HasManualActionInQueue(role.InstanceId) ? QueueOnStart.ReplacesPlayerActions : QueueOnStart.ReplacesOwnActions;
     }
 
     private IReadOnlyList<Package> ReadBag(ItemManager items, ConfigManager config, long bagId)
