@@ -10,6 +10,8 @@ namespace UnpackAll.Core;
 /// </summary>
 public static class OutcomeMessage
 {
+    private const string SeeLog = "see BepInEx/unpack-all.log.";
+
     private static readonly char[] ClosingPunctuation = { '.', '!', '?', '。', '！', '？', ' ', '\t', '\r', '\n' };
 
     /// <summary>Unity rich-text tags such as &lt;color=#f55&gt;, &lt;/b&gt; or &lt;#ff0000&gt;, which the game's own UI renders but a toast would print.</summary>
@@ -32,6 +34,7 @@ public static class OutcomeMessage
     {
         var lines = new List<string> { tally.Queued > 0 ? $"Unpacking {Packages(tally.Queued)}." : "Nothing unpacked." };
 
+        if (tally.Dropped > 0) lines.Add($"{tally.Dropped} dropped by the game before {ItOrThey(tally.Dropped)} started, {SeeLog}");
         if (tally.PickedUp > 0) lines.Add(PickupLine(tally.PickedUp, tally.WaitingInBag));
         if (tally.NoSpot > 0) lines.Add($"{tally.NoSpot} left: no free package spot at home.");
         if (tally.FloorRefused > 0) lines.Add($"{tally.FloorRefused} left on the floor: your bag could not carry {ItOrThem(tally.FloorRefused)}.");
@@ -41,10 +44,23 @@ public static class OutcomeMessage
         return string.Join(" ", lines);
     }
 
+    /// <summary>The toast once the unpacks a press started have all left the queue, or null when each one used its package.</summary>
+    public static string? Describe(WatchStep.Finished finished)
+    {
+        var unused = finished.Started - finished.Consumed;
+
+        if (unused <= 0) return null;
+
+        var count = unused == finished.Started ? $"{unused}" : $"{unused} of {finished.Started}";
+        var their = unused == 1 ? "its package" : "their packages";
+
+        return $"{count} {(finished.Started == 1 ? "unpack" : "unpacks")} ended without opening {their}, {SeeLog}";
+    }
+
     /// <summary>Nothing started, so every package picked up before the failure is still in the bag.</summary>
     private static string StartFailedMessage(int pickedUp)
     {
-        const string failed = "Could not start unpacking, see BepInEx/unpack-all.log.";
+        const string failed = "Could not start unpacking, " + SeeLog;
 
         return pickedUp > 0 ? $"{failed} {PickupLine(pickedUp, waitingInBag: pickedUp)}" : failed;
     }

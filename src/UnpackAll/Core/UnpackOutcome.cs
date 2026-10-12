@@ -27,9 +27,11 @@ public abstract record UnpackOutcome
 }
 
 /// <summary>
-/// What a press did, counted in packages. Queued started unpacking; PickedUp came off the floor into the bag, and
-/// WaitingInBag of those were not lined up and are still in it. The rest were left, each for one reason: NoSpot had no
-/// free package spot at home, FloorRefused could not be carried, FloorAway lie at home while the character is
-/// elsewhere, and Unusable were refused by the game's use check, the first refusal's reason kept for the message.
+/// What a press did, counted in packages. Queued started unpacking and were seen in the character's queue afterwards;
+/// Dropped were lined up and started, but the game threw them away and their packages are still in the bag. PickedUp
+/// came off the floor into the bag, and WaitingInBag of those are still in it, not lined up or dropped. The rest were
+/// left, each for one reason: NoSpot had no free package spot at home, FloorRefused could not be carried, FloorAway lie
+/// at home while the character is elsewhere, and Unusable were refused by the game's use check, the first refusal's
+/// reason kept for the message.
 /// </summary>
-public sealed record UnpackTally(int Queued, int PickedUp, int WaitingInBag, int NoSpot, int FloorRefused, int FloorAway, int Unusable, string? UnusableReason);
+public sealed record UnpackTally(int Queued, int PickedUp, int WaitingInBag, int NoSpot, int FloorRefused, int FloorAway, int Unusable, string? UnusableReason, int Dropped = 0);

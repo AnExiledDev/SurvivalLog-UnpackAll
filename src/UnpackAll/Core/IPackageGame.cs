@@ -24,4 +24,11 @@ public interface IPackageGame
 
     /// <summary>Starts everything lined up as one batch, the way the game's Use button does. False when that failed.</summary>
     bool TryStart();
+
+    /// <summary>
+    /// How many uses of these packages' kinds the character's queue holds right now, waiting or running. A started
+    /// batch the game accepted can still be thrown away, so this is how a press finds out what really started. Null
+    /// when the queue cannot be read.
+    /// </summary>
+    int? UsesInQueue(IReadOnlyList<Package> packages);
 }

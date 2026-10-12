@@ -14,8 +14,11 @@ public abstract record PageCommand
     {
     }
 
-    /// <summary>The Unpack all button was clicked.</summary>
+    /// <summary>The Unpack all row of the inventory's Mods menu was clicked.</summary>
     public sealed record Unpack : PageCommand;
+
+    /// <summary>The inventory toolbar's Mods menu opened or closed; the page gets no keys, so Esc has to close it from here.</summary>
+    public sealed record Menu(bool IsOpen) : PageCommand;
 
     /// <summary>The page script just installed itself.</summary>
     public sealed record Ready : PageCommand;
@@ -37,6 +40,7 @@ public abstract record PageCommand
         return (parts[0], parts.Length) switch
         {
             ("unpack", 1) => new Unpack(),
+            ("menu", 2) when parts[1] is "0" or "1" => new Menu(parts[1] == "1"),
             ("ready", 1) => new Ready(),
             ("noscript", 1) => new NoScript(),
             _ => new Unknown(message),

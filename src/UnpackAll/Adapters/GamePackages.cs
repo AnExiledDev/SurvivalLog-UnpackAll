@@ -27,6 +27,8 @@ internal sealed class GamePackages : IPackageGame
     /// <summary>Item config id to its unpack action id, or null when the item is not a package.</summary>
     private readonly Dictionary<int, int?> _unpackActions = new();
 
+    private readonly HashSet<int> _linedUpConfigs = new();
+
     private IntPtr _knownConfig;
 
     public GamePackages(Action<string> log)
@@ -119,7 +121,13 @@ internal sealed class GamePackages : IPackageGame
         }
     }
 
-    /// <summary>Lines up one use of the package, as the inventory's Use button does, without starting it.</summary>
+    /// <summary>
+    /// Lines up one use of the package, as the inventory's Use button does, without starting it. The Use button sends
+    /// the character to the package point nearest it (InstallPlanManager.OnSetPendingBagFurnitureItem, then
+    /// LogicAdapter.OnStartBagFurnitureItemInstall), so this does too. The game puts a walk to the target in front of
+    /// the unpack, and a use aimed at the world's origin instead left the queue at once with its package unopened. With
+    /// no package point the Use button refuses with "bag furniture full", and so does this.
+    /// </summary>
     public bool TryQueue(Package package)
     {
         try
@@ -129,7 +137,17 @@ internal sealed class GamePackages : IPackageGame
 
             if (role == null || config == null || UnpackAction(config, package.ConfigId) is not { } actionId) return false;
 
-            role.AddLeadingRoleAction(actionId, package.ItemId, Vector3.zero, Quaternion.identity);
+            if (NearestPackagePoint(config, role) is not { } point)
+            {
+                LogOnce("no package point", "the game has no package point to send an unpack to, so nothing is lined up (reported once)");
+
+                return false;
+            }
+
+            role.AddLeadingRoleAction(actionId, package.ItemId, point, Quaternion.identity);
+            _linedUpConfigs.Add(package.ConfigId);
+
+            _log($"lined up package {package.ItemId} (config {package.ConfigId}, action {actionId}) to unpack at package point {point}");
 
             return true;
         }
@@ -170,6 +188,64 @@ internal sealed class GamePackages : IPackageGame
         }
     }
 
+    /// <summary>The game's own count of item uses with the character, summed over the packages' kinds, logged with what the queue holds.</summary>
+    public int? UsesInQueue(IReadOnlyList<Package> packages)
+    {
+        try
+        {
+            var world = GameSingleton.Existing<BattleLogicWorld>();
+            var role = world?._AgentManager?.GetLeadingRole();
+            var actions = world?._ActionManager;
+
+            if (role == null || actions == null) return null;
+
+            var configIds = packages.Select(package => package.ConfigId).Distinct().ToArray();
+            var inQueue = configIds.Sum(configId => actions.CountPendingItemUses(role.InstanceId, configId));
+
+            _log($"after start: {inQueue} use(s) of config {string.Join(",", configIds)} with the character; {DescribeQueue(actions, role.InstanceId)}");
+
+            return inQueue;
+        }
+        catch (Exception ex)
+        {
+            ReportOnce("queue count", ex);
+
+            return null;
+        }
+    }
+
+    /// <summary>The package kinds lined up since the last read, for the watch over the press that lined them up.</summary>
+    public IReadOnlyCollection<int> LinedUpConfigs => _linedUpConfigs;
+
+    /// <summary>
+    /// One look for the watch over started unpacks: the uses of these kinds still with the character, the units of
+    /// them in the bag, and a line on what the queue holds. Null when the game cannot be read.
+    /// </summary>
+    public StartedLook? LookAtStarted(IReadOnlyCollection<int> configIds)
+    {
+        try
+        {
+            var world = GameSingleton.Existing<BattleLogicWorld>();
+            var config = GameSingleton.Existing<ConfigManager>();
+            var role = world?._AgentManager?.GetLeadingRole();
+            var actions = world?._ActionManager;
+            var items = world?._ItemManager;
+
+            if (role == null || config == null || actions == null || items == null) return null;
+
+            var pending = configIds.Sum(configId => actions.CountPendingItemUses(role.InstanceId, configId));
+            var bagUnits = ReadBag(items, config, role.InstanceId).Where(package => configIds.Contains(package.ConfigId)).Sum(package => package.Count);
+
+            return new StartedLook(pending, bagUnits, DescribeQueue(actions, role.InstanceId));
+        }
+        catch (Exception ex)
+        {
+            ReportOnce("watch", ex);
+
+            return null;
+        }
+    }
+
     /// <summary>
     /// Reads the press's stock. The free spot count is read as it stands, without BuildComponent.ReconcilePackagePoints
     /// first: that is a repair pass, not a recount. It writes package points for unplaced bag furniture into the save's
@@ -182,6 +258,8 @@ internal sealed class GamePackages : IPackageGame
         var config = GameSingleton.Existing<ConfigManager>();
         var agents = world?._AgentManager;
         var role = agents?.GetLeadingRole();
+
+        _linedUpConfigs.Clear();
 
         if (world == null || config == null || agents == null || role == null || !IsAfterDisaster(world)) return new PackageRead.NoGame();
 
@@ -340,6 +418,50 @@ internal sealed class GamePackages : IPackageGame
         _knownConfig = config.Pointer;
     }
 
+    /// <summary>
+    /// The package point nearest the character, measured straight, as the Use button picks it. The game's map of
+    /// package points lists every point of the home map, taken or not; the unpack places its furniture where the
+    /// character stands when it runs, so the point is only where the character walks to. A character the game cannot
+    /// place is measured from the origin, as the game does.
+    /// </summary>
+    private static Vector3? NearestPackagePoint(ConfigManager config, LeadingRole role)
+    {
+        var points = config.GetPackageNodeMap();
+
+        if (points == null || points.Count == 0) return null;
+
+        var from = AgentTools.GetAgentComponent<TransformComponent>(role)?.Position ?? Vector3.zero;
+        Vector3? nearest = null;
+        var nearestDistance = float.MaxValue;
+
+        foreach (var point in points.Values)
+        {
+            var distance = (point - from).sqrMagnitude;
+
+            if (distance >= nearestDistance) continue;
+
+            nearest = point;
+            nearestDistance = distance;
+        }
+
+        return nearest;
+    }
+
+    /// <summary>What the character's queue holds, for the log: the running action, the action lists waiting, and whether a walk comes next.</summary>
+    private string DescribeQueue(ActionManager actions, long roleId)
+    {
+        try
+        {
+            return $"queue: running action {actions.GetCurrentActionIdForGm(roleId)}, {actions.GetQueueLengthForGm(roleId)} action list(s), next is a walk {actions.IsNextPendingActionMove(roleId)}";
+        }
+        catch (Exception ex)
+        {
+            ReportOnce("queue description", ex);
+
+            return "queue: unreadable";
+        }
+    }
+
     private void ClearLine(LeadingRole role)
     {
         try
@@ -361,3 +483,6 @@ internal sealed class GamePackages : IPackageGame
         if (_reportedFailures.Add(key)) _log(message);
     }
 }
+
+/// <summary>One look at started unpacks: uses still with the character, units in the bag, and the queue as a log line.</summary>
+internal readonly record struct StartedLook(int Pending, int BagUnits, string Queue);

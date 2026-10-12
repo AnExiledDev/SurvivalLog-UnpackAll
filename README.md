@@ -9,13 +9,14 @@ A BepInEx 6 (IL2CPP) plugin for Survival Log: one press unpacks every furniture 
 
 - Packages in your bag are unpacked first. If spots are left over, packages on the floor inside your home are picked up into your bag and unpacked as well.
 - Only as many unpacks are lined up as your home has free package spots, so every one of them runs and the queue bar never fills with unpacks that would fail. The rest stay where they are.
-- Each unpack goes through the game's own Use action for that package, the same one the inventory's Use button lines up, so the game's own checks and timings apply.
+- Each unpack goes through the game's own Use action for that package, the same one the inventory's Use button lines up, so the game's own checks and timings apply. Like the Use button, it sends your character to the package point nearest them first.
+- After starting, the mod checks that the unpacks really reached your character's queue and follows them until they are done. An unpack the game drops is never counted as unpacking: the message says how many were dropped, and a later line says so if an unpack ends without opening its package. The details go to the log.
 - A short message at the bottom of the screen says how many packages are unpacking, how many were picked up from the floor (and how many of those wait in your bag), and how many were left and why (no free package spot, your bag could not carry it, you are away from home, or the game's own reason for refusing).
 
 ## Controls
 
-- **Unpack all** button on the inventory screen's item tab, next to the game's Sort button.
-- `F9` anywhere in a loaded game does the same. On the title screen and in the prologue it does nothing, and the button is not shown there either.
+- **Unpack all** in the Mods menu on the inventory screen's item tab, the button next to the game's Sort button. Other mods that use the same menu (Storage Hub does) list their actions there too. Esc or a click elsewhere closes it.
+- `F9` anywhere in a loaded game does the same. On the title screen and in the prologue it does nothing, and the menu entry is not shown there either.
 
 Unpacks join the end of your character's action queue, so actions you queued yourself (taking adrenaline, say) stay and run first. While unpacks from an earlier press are still lined up, another press does nothing but say so: their spots are only freed as each one runs, so a second batch would have nowhere to go.
 
@@ -25,7 +26,7 @@ Unpacks join the end of your character's action queue, so actions you queued you
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| `Controls/UnpackKey` | `F9` | Key that does the same as the Unpack all button. `None` turns the key off; the button still works. |
+| `Controls/UnpackKey` | `F9` | Key that does the same as Unpack all in the Mods menu, which shows the key next to the entry. `None` turns the key off; the menu entry still works. |
 
 Log: `BepInEx/unpack-all.log`.
 

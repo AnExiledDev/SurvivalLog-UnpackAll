@@ -45,8 +45,14 @@ public static class UnpackRun
         // Starting with nothing lined up does nothing useful: the game logs an error, and when starting replaces the
         // queue it first cancels whatever the character is doing.
         if (press.Queued == 0) return new UnpackOutcome.Done(press.Tally());
+        if (!game.TryStart()) return new UnpackOutcome.StartFailed(press.Queued, press.PickedUp);
 
-        return game.TryStart() ? new UnpackOutcome.Done(press.Tally()) : new UnpackOutcome.StartFailed(press.Queued, press.PickedUp);
+        // The game can accept the start and still throw the unpacks away, so only what reached the queue counts. Before
+        // this press no use of any of these kinds was pending (AlreadyQueued), so every use found is one of its own. A
+        // queue that cannot be read leaves the press as lined up; the adapter logs why.
+        var tally = game.UsesInQueue(press.LinedUp) is { } inQueue ? press.Tally(inQueue) : press.Tally();
+
+        return new UnpackOutcome.Done(tally);
     }
 
     private static int Units(IEnumerable<Package> packages) => packages.Sum(package => Math.Max(0, package.Count));
@@ -75,6 +81,7 @@ public static class UnpackRun
     {
         private readonly IPackageGame _game;
         private readonly List<Chosen> _chosen = new();
+        private readonly List<Package> _linedUp = new();
         private int _spotsLeft;
         private int _queuedFromFloor;
         private int _noSpot;
@@ -93,8 +100,8 @@ public static class UnpackRun
 
         public int PickedUp { get; private set; }
 
-        /// <summary>Picked-up packages that were not lined up: the surplus of a stack bigger than the spots, and any the game refused.</summary>
-        private int WaitingInBag => Math.Max(0, PickedUp - _queuedFromFloor);
+        /// <summary>The packages with at least one unpack lined up, each once.</summary>
+        public IReadOnlyList<Package> LinedUp => _linedUp;
 
         /// <summary>
         /// Gives each package a spot until none are left. The game's use check runs only while a spot is free, so a
@@ -163,6 +170,8 @@ public static class UnpackRun
                         break;
                     }
 
+                    if (unit == 0) _linedUp.Add(package);
+
                     Queued++;
 
                     if (isFromFloor) _queuedFromFloor++;
@@ -170,7 +179,23 @@ public static class UnpackRun
             }
         }
 
-        public UnpackTally Tally() => new(Queued, PickedUp, WaitingInBag, _noSpot, _floorRefused, _floorAway, _unusable, _unusableReason);
+        /// <summary>The press as lined up, for a batch that never started or whose queue could not be read.</summary>
+        public UnpackTally Tally() => TallyDropping(0);
+
+        /// <summary>The press after its start, with the unpacks missing from the character's queue counted as dropped.</summary>
+        public UnpackTally Tally(int inQueue) => TallyDropping(Math.Clamp(Queued - inQueue, 0, Queued));
+
+        /// <summary>
+        /// Which packages were dropped is not known, only how many, so a dropped unpack counts against the floor
+        /// packages first: a picked-up package is then said to wait in the bag, where it is, rather than to unpack.
+        /// </summary>
+        private UnpackTally TallyDropping(int dropped)
+        {
+            var queuedFromFloor = Math.Max(0, _queuedFromFloor - dropped);
+            var waitingInBag = Math.Max(0, PickedUp - queuedFromFloor);
+
+            return new UnpackTally(Queued - dropped, PickedUp, waitingInBag, _noSpot, _floorRefused, _floorAway, _unusable, _unusableReason, dropped);
+        }
 
         /// <summary>Takes a whole floor stack while any spot is still unclaimed by an earlier pickup, even when the stack overshoots it.</summary>
         private void PickUp(Package drop)
