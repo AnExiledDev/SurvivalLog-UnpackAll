@@ -6,9 +6,10 @@ namespace UnpackAll.Core;
 
 /// <summary>
 /// One press of Unpack All. Packages already in the bag go first; packages on the floor at home are picked up while
-/// spots are left after that. Only as many unpacks are lined up as the home has free package spots, so every one of
-/// them can run and none sits in the queue bar waiting to fail. Everything else stays where it is and is counted by
-/// the reason it was left.
+/// spots are left after that, and packages in the home's storages are moved into the bag while spots are still left
+/// after the floor. Only as many unpacks are lined up as the home has free package spots, so every one of them can run
+/// and none sits in the queue bar waiting to fail. Everything else stays where it is and is counted by the reason it
+/// was left.
 /// </summary>
 public static class UnpackRun
 {
@@ -31,21 +32,26 @@ public static class UnpackRun
     {
         // Unpacks still lined up hold spots the free count does not show until each one runs, so a second batch would
         // line up unpacks with no spot left to land in.
+        var hasLookedInStorages = stock.StorageAccess != StorageAccess.Off;
+        // Storages the config turned off are never touched, whatever the read handed over.
+        var storages = hasLookedInStorages ? stock.Storages : Array.Empty<Package>();
+
         if (stock.AlreadyQueued > 0) return new UnpackOutcome.AlreadyUnpacking(stock.AlreadyQueued);
-        if (Units(stock.Bag) + Units(stock.Floor) == 0) return new UnpackOutcome.NothingToUnpack();
+        if (Units(stock.Bag) + Units(stock.Floor) + Units(storages) == 0) return new UnpackOutcome.NothingToUnpack(hasLookedInStorages);
         // Actions the player queued are never traded for unpacks, so this is checked before anything leaves the floor.
         if (stock.QueueOnStart == QueueOnStart.ReplacesPlayerActions) return new UnpackOutcome.QueueBusy();
 
         var press = new Press(game, stock.FreeSpots);
 
-        press.Choose(stock.Bag, isFromFloor: false);
+        press.Choose(stock.Bag, isBrought: false);
         press.TakeFromFloor(stock.Bag, stock.Floor, stock.IsHome);
+        press.TakeFromStorages(storages, stock.IsHome, stock.StorageAccess);
         press.QueueChosen();
 
         // Starting with nothing lined up does nothing useful: the game logs an error, and when starting replaces the
         // queue it first cancels whatever the character is doing.
         if (press.Queued == 0) return new UnpackOutcome.Done(press.Tally());
-        if (!game.TryStart()) return new UnpackOutcome.StartFailed(press.Queued, press.PickedUp);
+        if (!game.TryStart()) return new UnpackOutcome.StartFailed(press.Queued, press.PickedUp, press.FromStorage);
 
         // The game can accept the start and still throw the unpacks away, so only what reached the queue counts. Before
         // this press no use of any of these kinds was pending (AlreadyQueued), so every use found is one of its own. A
@@ -59,7 +65,7 @@ public static class UnpackRun
 
     /// <summary>
     /// Packages that arrived in the bag since it was last read: new items, and units added to a stack the bag already
-    /// had (a floor package can merge into one when a stacking mod lets packages stack).
+    /// had (a floor or storage package can merge into one when a stacking mod lets packages stack).
     /// </summary>
     private static IEnumerable<Package> Arrivals(IReadOnlyList<Package> before, IReadOnlyList<Package> after)
     {
@@ -73,8 +79,8 @@ public static class UnpackRun
         }
     }
 
-    /// <summary>A package given spots, and whether it came up off the floor in this press.</summary>
-    private readonly record struct Chosen(Package Package, bool IsFromFloor);
+    /// <summary>A package given spots, and whether this press brought it into the bag from the floor or a storage.</summary>
+    private readonly record struct Chosen(Package Package, bool IsBrought);
 
     /// <summary>The spots one press hands out, the packages chosen for them, and the count of every package left.</summary>
     private sealed class Press
@@ -83,10 +89,14 @@ public static class UnpackRun
         private readonly List<Chosen> _chosen = new();
         private readonly List<Package> _linedUp = new();
         private int _spotsLeft;
-        private int _queuedFromFloor;
+        private int _queuedBrought;
+        private int _storageClaimed;
         private int _noSpot;
         private int _floorRefused;
         private int _floorAway;
+        private int _storageRefused;
+        private int _storageAway;
+        private int _storageBehindPanel;
         private int _unusable;
         private string? _unusableReason;
 
@@ -100,6 +110,8 @@ public static class UnpackRun
 
         public int PickedUp { get; private set; }
 
+        public int FromStorage { get; private set; }
+
         /// <summary>The packages with at least one unpack lined up, each once.</summary>
         public IReadOnlyList<Package> LinedUp => _linedUp;
 
@@ -107,7 +119,7 @@ public static class UnpackRun
         /// Gives each package a spot until none are left. The game's use check runs only while a spot is free, so a
         /// refused package hands its spot to the next one.
         /// </summary>
-        public void Choose(IEnumerable<Package> packages, bool isFromFloor)
+        public void Choose(IEnumerable<Package> packages, bool isBrought)
         {
             foreach (var package in packages)
             {
@@ -131,7 +143,7 @@ public static class UnpackRun
                 _spotsLeft -= taken;
                 _noSpot += units - taken;
 
-                _chosen.Add(new Chosen(package with { Count = taken }, isFromFloor));
+                _chosen.Add(new Chosen(package with { Count = taken }, isBrought));
             }
         }
 
@@ -153,13 +165,37 @@ public static class UnpackRun
 
             foreach (var drop in floor) PickUp(drop);
 
-            if (PickedUp > 0) Choose(Arrivals(bagBefore, _game.BagPackages()), isFromFloor: true);
+            if (PickedUp > 0) Choose(Arrivals(bagBefore, _game.BagPackages()), isBrought: true);
+        }
+
+        /// <summary>
+        /// Moves storage packages into the bag while the ones moved have not yet filled the spots the floor left, then
+        /// chooses among the packages that arrived. Like the floor pickup, the game's move takes a whole stack, so one
+        /// bigger than the spots left uses them and the rest wait in the bag. A package the game would not let the
+        /// character use stays in its storage, and nothing is moved away from home or while another window is open.
+        /// </summary>
+        public void TakeFromStorages(IReadOnlyList<Package> storages, bool isHome, StorageAccess access)
+        {
+            if (Units(storages) == 0) return;
+
+            if (!isHome)
+            {
+                _storageAway += Units(storages);
+
+                return;
+            }
+
+            var bagBefore = _game.BagPackages();
+
+            foreach (var stored in storages) TakeFromStorage(stored, access);
+
+            if (FromStorage > 0) Choose(Arrivals(bagBefore, _game.BagPackages()), isBrought: true);
         }
 
         /// <summary>Lines up one unpack per chosen package; a package the game will not take gives up the rest of its stack.</summary>
         public void QueueChosen()
         {
-            foreach (var (package, isFromFloor) in _chosen)
+            foreach (var (package, isBrought) in _chosen)
             {
                 for (var unit = 0; unit < package.Count; unit++)
                 {
@@ -174,7 +210,7 @@ public static class UnpackRun
 
                     Queued++;
 
-                    if (isFromFloor) _queuedFromFloor++;
+                    if (isBrought) _queuedBrought++;
                 }
             }
         }
@@ -186,15 +222,29 @@ public static class UnpackRun
         public UnpackTally Tally(int inQueue) => TallyDropping(Math.Clamp(Queued - inQueue, 0, Queued));
 
         /// <summary>
-        /// Which packages were dropped is not known, only how many, so a dropped unpack counts against the floor
-        /// packages first: a picked-up package is then said to wait in the bag, where it is, rather than to unpack.
+        /// Which packages were dropped is not known, only how many, so a dropped unpack counts against the packages
+        /// brought into the bag first: a brought package is then said to wait in the bag, where it is, rather than to
+        /// unpack.
         /// </summary>
         private UnpackTally TallyDropping(int dropped)
         {
-            var queuedFromFloor = Math.Max(0, _queuedFromFloor - dropped);
-            var waitingInBag = Math.Max(0, PickedUp - queuedFromFloor);
+            var queuedBrought = Math.Max(0, _queuedBrought - dropped);
+            var waitingInBag = Math.Max(0, PickedUp + FromStorage - queuedBrought);
 
-            return new UnpackTally(Queued - dropped, PickedUp, waitingInBag, _noSpot, _floorRefused, _floorAway, _unusable, _unusableReason, dropped);
+            return new UnpackTally(
+                Queued - dropped,
+                PickedUp,
+                waitingInBag,
+                _noSpot,
+                _floorRefused,
+                _floorAway,
+                _unusable,
+                _unusableReason,
+                dropped,
+                FromStorage,
+                _storageRefused,
+                _storageAway,
+                _storageBehindPanel);
         }
 
         /// <summary>Takes a whole floor stack while any spot is still unclaimed by an earlier pickup, even when the stack overshoots it.</summary>
@@ -214,6 +264,46 @@ public static class UnpackRun
             var picked = Math.Clamp(_game.PickUp(drop), 0, units);
             PickedUp += picked;
             _floorRefused += units - picked;
+        }
+
+        /// <summary>
+        /// Takes a whole storage stack while any spot is still unclaimed by an earlier move, even when the stack
+        /// overshoots it. The use check runs first, so a package the character could not use never leaves its storage.
+        /// With another window open the stack stays put but still claims its spots, so the count said to wait behind
+        /// the window is what a press with the window closed would move.
+        /// </summary>
+        private void TakeFromStorage(Package stored, StorageAccess access)
+        {
+            var units = Math.Max(0, stored.Count);
+
+            if (units == 0) return;
+
+            if (_storageClaimed >= _spotsLeft)
+            {
+                _noSpot += units;
+
+                return;
+            }
+
+            if (_game.WhyUnusable(stored) is { } reason)
+            {
+                CountUnusable(units, reason);
+
+                return;
+            }
+
+            if (access != StorageAccess.Allowed)
+            {
+                _storageBehindPanel += units;
+                _storageClaimed += units;
+
+                return;
+            }
+
+            var moved = Math.Clamp(_game.TakeFromStorage(stored), 0, units);
+            FromStorage += moved;
+            _storageClaimed += moved;
+            _storageRefused += units - moved;
         }
 
         private void CountUnusable(int units, string reason)

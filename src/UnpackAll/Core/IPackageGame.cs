@@ -13,7 +13,13 @@ public interface IPackageGame
     /// <summary>The game's own floor pickup into the bag. How many of the drop's packages left the floor, 0 when refused.</summary>
     int PickUp(Package floorPackage);
 
-    /// <summary>The bag's packages as they are now, read again after pickups.</summary>
+    /// <summary>
+    /// The game's own quick move of a whole stack from its storage into the bag, as a click with the storage open does.
+    /// How many of the stack's packages left the storage, 0 when refused.
+    /// </summary>
+    int TakeFromStorage(Package storagePackage);
+
+    /// <summary>The bag's packages as they are now, read again after pickups and moves.</summary>
     IReadOnlyList<Package> BagPackages();
 
     /// <summary>The game's reason for refusing to use this package right now, or null when it would allow it.</summary>

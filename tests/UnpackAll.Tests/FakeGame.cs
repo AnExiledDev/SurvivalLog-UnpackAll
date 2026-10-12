@@ -3,8 +3,8 @@ using UnpackAll.Core;
 namespace UnpackAll.Tests;
 
 /// <summary>
-/// The game as far as an unpack press can tell: a bag, the floor at home, the unpacks the character has lined up and
-/// its action queue. Like the game, lining up an unpack is never refused for want of units in the stack (the game only
+/// The game as far as an unpack press can tell: a bag, the floor and the storages at home, the unpacks the character
+/// has lined up and its action queue. Like the game, lining up an unpack is never refused for want of units in the stack (the game only
 /// finds out when the unpack's turn comes), so <see cref="OverQueued"/> shows a press that lined up more than the bag
 /// holds. Starting appends to the queue, as the game does after the prologue; with <see cref="StartClearsQueue"/> it
 /// replaces the queue, as the game's default action mode does, so a test can see a press that would have thrown away
@@ -36,6 +36,12 @@ internal sealed class FakeGame : IPackageGame
 
     public List<Package> Floor { get; } = new();
 
+    /// <summary>The packages in the home's storages, all storages together.</summary>
+    public List<Package> Storages { get; } = new();
+
+    /// <summary>Whether a press may take from the storages; allowed by default, as the mod ships.</summary>
+    public StorageAccess StorageAccess { get; set; } = StorageAccess.Allowed;
+
     public List<long> LinedUp { get; } = new();
 
     /// <summary>The character's action queue, the running action first. Negative ids are not unpacks.</summary>
@@ -47,10 +53,13 @@ internal sealed class FakeGame : IPackageGame
     /// <summary>Floor packages the bag cannot carry at all.</summary>
     public HashSet<long> TooHeavy { get; } = new();
 
-    /// <summary>How many more packages the bag can carry in total.</summary>
+    /// <summary>Storage packages the game's move refuses outright, as for a bag too heavy to take the stack.</summary>
+    public HashSet<long> StuckInStorage { get; } = new();
+
+    /// <summary>How many more packages the bag can carry in total, from the floor and storages alike.</summary>
     public int BagRoom { get; set; } = int.MaxValue;
 
-    /// <summary>Floor packages that land on a stack already in the bag (floor id to bag id), as when packages stack.</summary>
+    /// <summary>Floor or storage packages that land on a stack already in the bag (their id to bag id), as when packages stack.</summary>
     public Dictionary<long, long> MergesInto { get; } = new();
 
     /// <summary>The game's queue refuses everything, as it does for an action id it does not know.</summary>
@@ -67,6 +76,8 @@ internal sealed class FakeGame : IPackageGame
 
     public List<long> PickupsTried { get; } = new();
 
+    public List<long> StorageMovesTried { get; } = new();
+
     public IEnumerable<long> Unpacking => Running.Where(id => id >= 0);
 
     /// <summary>Bag items lined up or unpacking more times than their stack holds: unpacks that fail when their turn comes.</summary>
@@ -79,7 +90,7 @@ internal sealed class FakeGame : IPackageGame
         if (IsNoGame) return new PackageRead.NoGame();
         if (NotReadyReason is { } reason) return new PackageRead.NotReady(reason);
 
-        return new PackageRead.Ready(new PackageStock(FreeSpots, LinedUp.Count + Unpacking.Count(), IsHome, Bag.ToList(), Floor.ToList(), WhatStartDoes()));
+        return new PackageRead.Ready(new PackageStock(FreeSpots, LinedUp.Count + Unpacking.Count(), IsHome, Bag.ToList(), Floor.ToList(), WhatStartDoes(), Storages.ToList(), StorageAccess));
     }
 
     public int PickUp(Package floorPackage)
@@ -103,6 +114,33 @@ internal sealed class FakeGame : IPackageGame
         AddToBag(MergesInto.TryGetValue(lying.ItemId, out var stackId) ? stackId : lying.ItemId + BagIdOffset, lying.ConfigId, picked);
 
         return picked;
+    }
+
+    /// <summary>
+    /// Like the game's quick move, a stack keeps its id when it moves whole into the bag. When the bag runs out of room
+    /// partway, the units already moved stay in the bag and the rest stay in the storage: nothing is lost or doubled.
+    /// </summary>
+    public int TakeFromStorage(Package storagePackage)
+    {
+        StorageMovesTried.Add(storagePackage.ItemId);
+
+        var index = Storages.FindIndex(package => package.ItemId == storagePackage.ItemId);
+
+        if (index < 0 || StuckInStorage.Contains(storagePackage.ItemId)) return 0;
+
+        var stored = Storages[index];
+        var moved = Math.Min(stored.Count, BagRoom);
+
+        if (moved == 0) return 0;
+
+        BagRoom -= moved;
+
+        if (moved == stored.Count) Storages.RemoveAt(index);
+        else Storages[index] = stored with { Count = stored.Count - moved };
+
+        AddToBag(MergesInto.TryGetValue(stored.ItemId, out var stackId) ? stackId : stored.ItemId, stored.ConfigId, moved);
+
+        return moved;
     }
 
     public IReadOnlyList<Package> BagPackages() => Bag.ToList();
