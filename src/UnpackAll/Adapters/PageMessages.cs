@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using HarmonyLib;
 using UnpackAll.Core;
 using Vuplex.WebView.Internal;
@@ -14,9 +15,13 @@ namespace UnpackAll.Adapters;
 internal static class PageMessages
 {
     private static readonly ConcurrentQueue<PageCommand> Queue = new();
+    private static Action<string> _log = _ => { };
+    private static int _hasReportedFailure;
 
     public static void Apply(Harmony harmony, Action<string> log)
     {
+        _log = log;
+
         try
         {
             harmony.Patch(AccessTools.Method(typeof(BaseWebView), "HandleMessageEmitted"), prefix: new HarmonyMethod(typeof(PageMessages), nameof(TakeOurs)));
@@ -42,12 +47,28 @@ internal static class PageMessages
         return false;
     }
 
+    /// <summary>Never throws into the web view: on any failure the message goes on to the game as if the mod were not here.</summary>
     private static bool TakeOurs(string serializedMessage)
     {
-        if (!PageCommand.IsOurs(serializedMessage)) return true;
+        try
+        {
+            if (!PageCommand.IsOurs(serializedMessage)) return true;
 
-        Queue.Enqueue(PageCommand.Parse(serializedMessage));
+            Queue.Enqueue(PageCommand.Parse(serializedMessage));
 
-        return false;
+            return false;
+        }
+        catch (Exception ex)
+        {
+            ReportOnce(ex);
+
+            return true;
+        }
+    }
+
+    /// <summary>Runs on the web view's thread, so the once-only flag is set atomically.</summary>
+    private static void ReportOnce(Exception ex)
+    {
+        if (Interlocked.Exchange(ref _hasReportedFailure, 1) == 0) _log("reading a web UI message failed, it was passed on to the game (reported once): " + ex);
     }
 }

@@ -14,8 +14,10 @@ public class UnpackRunTests
         var tally = Done(UnpackRun.Run(game));
 
         Assert.Equal(new long[] { 1, 2 }, game.Unpacking);
+        Assert.Empty(game.OverQueued);
         Assert.Equal(2, tally.Queued);
         Assert.Equal(2, tally.NoSpot);
+        Assert.Equal(0, tally.Unusable);
     }
 
     [Fact]
@@ -39,9 +41,12 @@ public class UnpackRunTests
         var tally = Done(UnpackRun.Run(game));
 
         Assert.Equal(new[] { 1, 10 + BagIdOffset, 11 + BagIdOffset }, game.Unpacking);
+        Assert.Empty(game.OverQueued);
         Assert.Equal(new[] { Pkg(12) }, game.Floor);
         Assert.Equal(2, tally.PickedUp);
+        Assert.Equal(0, tally.WaitingInBag);
         Assert.Equal(1, tally.NoSpot);
+        Assert.Equal(0, tally.Unusable);
     }
 
     [Fact]
@@ -58,7 +63,7 @@ public class UnpackRunTests
     [Fact]
     public void With_no_free_spot_nothing_leaves_the_floor_and_the_character_keeps_its_current_action()
     {
-        var game = new FakeGame { FreeSpots = 0, Bag = { Pkg(1) }, Floor = { Pkg(10) } };
+        var game = new FakeGame { FreeSpots = 0, StartClearsQueue = true, Bag = { Pkg(1) }, Floor = { Pkg(10) } };
 
         var tally = Done(UnpackRun.Run(game));
 
@@ -69,7 +74,7 @@ public class UnpackRunTests
     }
 
     [Fact]
-    public void A_second_press_while_unpacking_neither_restarts_the_batch_nor_touches_the_floor()
+    public void A_second_press_while_unpacking_neither_lines_up_more_nor_touches_the_floor()
     {
         var game = new FakeGame { FreeSpots = 3, Bag = { Pkg(1), Pkg(2) } };
 
@@ -79,7 +84,7 @@ public class UnpackRunTests
         var outcome = UnpackRun.Run(game);
 
         Assert.Equal(new UnpackOutcome.AlreadyUnpacking(2), outcome);
-        Assert.Equal(new long[] { 1, 2 }, game.Running);
+        Assert.Equal(new long[] { 1, 2 }, game.Unpacking);
         Assert.Empty(game.LinedUp);
         Assert.Empty(game.PickupsTried);
     }
@@ -131,7 +136,9 @@ public class UnpackRunTests
         var tally = Done(UnpackRun.Run(game));
 
         Assert.Equal(new long[] { 1, 1 }, game.Unpacking);
+        Assert.Empty(game.OverQueued);
         Assert.Equal(1, tally.NoSpot);
+        Assert.Equal(0, tally.Unusable);
     }
 
     [Fact]
@@ -142,8 +149,41 @@ public class UnpackRunTests
         var tally = Done(UnpackRun.Run(game));
 
         Assert.Equal(new long[] { 1, 1 }, game.Unpacking);
+        Assert.Empty(game.OverQueued);
         Assert.Equal(1, tally.PickedUp);
         Assert.Equal(2, tally.Queued);
+        Assert.Equal(0, tally.NoSpot);
+        Assert.Equal(0, tally.Unusable);
+    }
+
+    [Fact]
+    public void A_floor_package_that_lands_on_a_bag_stack_is_unpacked_once_even_with_spots_to_spare()
+    {
+        var game = new FakeGame { FreeSpots = 3, Bag = { Pkg(1) }, Floor = { Pkg(10) }, MergesInto = { [10] = 1 } };
+
+        var tally = Done(UnpackRun.Run(game));
+
+        Assert.Equal(new long[] { 1, 1 }, game.Unpacking);
+        Assert.Empty(game.OverQueued);
+        Assert.Equal(2, tally.Queued);
+        Assert.Equal(0, tally.NoSpot);
+        Assert.Equal(0, tally.Unusable);
+    }
+
+    [Fact]
+    public void A_floor_stack_that_lands_on_a_bag_stack_fills_the_spots_left_and_the_rest_wait_in_the_bag()
+    {
+        var game = new FakeGame { FreeSpots = 3, Bag = { Pkg(1, count: 2) }, Floor = { Pkg(10, count: 4) }, MergesInto = { [10] = 1 } };
+
+        var tally = Done(UnpackRun.Run(game));
+
+        Assert.Equal(new long[] { 1, 1, 1 }, game.Unpacking);
+        Assert.Empty(game.OverQueued);
+        Assert.Equal(3, tally.Queued);
+        Assert.Equal(4, tally.PickedUp);
+        Assert.Equal(3, tally.WaitingInBag);
+        Assert.Equal(3, tally.NoSpot);
+        Assert.Equal(0, tally.Unusable);
     }
 
     [Fact]
@@ -154,9 +194,12 @@ public class UnpackRunTests
         var tally = Done(UnpackRun.Run(game));
 
         Assert.Equal(new[] { 10 + BagIdOffset }, game.Unpacking);
+        Assert.Empty(game.OverQueued);
         Assert.Equal(new[] { Pkg(11) }, game.Floor);
         Assert.Equal(3, tally.PickedUp);
+        Assert.Equal(2, tally.WaitingInBag);
         Assert.Equal(3, tally.NoSpot);
+        Assert.Equal(0, tally.Unusable);
     }
 
     [Fact]
@@ -174,7 +217,7 @@ public class UnpackRunTests
     [Fact]
     public void When_nothing_can_be_lined_up_the_character_keeps_doing_what_it_was_doing()
     {
-        var game = new FakeGame { FreeSpots = 2, Bag = { Pkg(1) }, Refusals = { [1] = "Not now." } };
+        var game = new FakeGame { FreeSpots = 2, StartClearsQueue = true, Bag = { Pkg(1) }, Refusals = { [1] = "Not now." } };
 
         var tally = Done(UnpackRun.Run(game));
 
@@ -186,7 +229,7 @@ public class UnpackRunTests
     [Fact]
     public void A_package_the_game_will_not_line_up_is_reported_with_its_whole_stack()
     {
-        var game = new FakeGame { FreeSpots = 2, RefusesToQueue = true, Bag = { Pkg(1, count: 2) } };
+        var game = new FakeGame { FreeSpots = 2, StartClearsQueue = true, RefusesToQueue = true, Bag = { Pkg(1, count: 2) } };
 
         var tally = Done(UnpackRun.Run(game));
 
@@ -196,12 +239,57 @@ public class UnpackRunTests
     }
 
     [Fact]
-    public void A_game_that_is_not_loaded_is_reported_and_nothing_is_touched()
+    public void Unpacks_join_the_end_of_the_queue_and_the_actions_the_player_queued_stay()
     {
-        var game = new FakeGame { NotReadyReason = "load a save first", FreeSpots = 2, Bag = { Pkg(1) } };
+        var game = new FakeGame { FreeSpots = 2, Bag = { Pkg(1), Pkg(2) }, Running = { Adrenaline } };
 
-        Assert.Equal(new UnpackOutcome.NotReady("load a save first"), UnpackRun.Run(game));
+        var tally = Done(UnpackRun.Run(game));
+
+        Assert.Equal(new long[] { Walking, Adrenaline, 1, 2 }, game.Running);
+        Assert.Equal(2, tally.Queued);
+    }
+
+    [Fact]
+    public void When_starting_would_throw_away_actions_the_player_queued_nothing_is_touched()
+    {
+        var game = new FakeGame { FreeSpots = 3, StartClearsQueue = true, Bag = { Pkg(1) }, Floor = { Pkg(10) }, Running = { Adrenaline } };
+
+        Assert.Equal(new UnpackOutcome.QueueBusy(), UnpackRun.Run(game));
+        Assert.Equal(new long[] { Walking, Adrenaline }, game.Running);
+        Assert.Empty(game.LinedUp);
+        Assert.Empty(game.PickupsTried);
+    }
+
+    [Fact]
+    public void When_starting_replaces_a_queue_the_player_put_nothing_in_the_unpacks_start()
+    {
+        var game = new FakeGame { FreeSpots = 2, StartClearsQueue = true, Bag = { Pkg(1), Pkg(2) } };
+
+        var tally = Done(UnpackRun.Run(game));
+
+        Assert.Equal(new long[] { 1, 2 }, game.Running);
+        Assert.Equal(2, tally.Queued);
+    }
+
+    [Fact]
+    public void Outside_a_loaded_game_a_press_does_nothing()
+    {
+        var game = new FakeGame { IsNoGame = true, FreeSpots = 2, Bag = { Pkg(1) }, Floor = { Pkg(10) } };
+
+        Assert.Equal(new UnpackOutcome.NoGame(), UnpackRun.Run(game));
         Assert.Equal(new[] { Walking }, game.Running);
+        Assert.Empty(game.LinedUp);
+        Assert.Empty(game.PickupsTried);
+    }
+
+    [Fact]
+    public void A_game_that_is_not_ready_is_reported_and_nothing_is_touched()
+    {
+        var game = new FakeGame { NotReadyReason = "your home is not loaded", FreeSpots = 2, Bag = { Pkg(1) } };
+
+        Assert.Equal(new UnpackOutcome.NotReady("your home is not loaded"), UnpackRun.Run(game));
+        Assert.Equal(new[] { Walking }, game.Running);
+        Assert.Empty(game.LinedUp);
     }
 
     [Fact]
@@ -217,7 +305,16 @@ public class UnpackRunTests
     {
         var game = new FakeGame { FreeSpots = 2, FailsToStart = true, Bag = { Pkg(1) } };
 
-        Assert.Equal(new UnpackOutcome.StartFailed(1), UnpackRun.Run(game));
+        Assert.Equal(new UnpackOutcome.StartFailed(1, 0), UnpackRun.Run(game));
+    }
+
+    [Fact]
+    public void A_batch_the_game_will_not_start_still_reports_the_packages_it_picked_up()
+    {
+        var game = new FakeGame { FreeSpots = 2, FailsToStart = true, Bag = { Pkg(1) }, Floor = { Pkg(10) } };
+
+        Assert.Equal(new UnpackOutcome.StartFailed(2, 1), UnpackRun.Run(game));
+        Assert.Contains(Pkg(10 + BagIdOffset), game.Bag);
     }
 
     [Fact]
@@ -227,7 +324,8 @@ public class UnpackRunTests
 
         var tally = Done(UnpackRun.Run(game));
 
-        Assert.Equal(new[] { Walking }, game.Running);
+        Assert.Empty(game.Unpacking);
+        Assert.Empty(game.LinedUp);
         Assert.Equal(1, tally.NoSpot);
     }
 
