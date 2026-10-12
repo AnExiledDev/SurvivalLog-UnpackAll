@@ -1,0 +1,72 @@
+using UnpackAll.Core;
+using Xunit;
+
+namespace UnpackAll.Tests;
+
+public class OutcomeMessageTests
+{
+    [Fact]
+    public void A_press_reads_as_what_started_then_what_was_left_and_why()
+    {
+        var outcome = Done(queued: 3, pickedUp: 1, noSpot: 2);
+
+        Assert.Equal("Unpacking 3 packages. Picked up 1 from the floor. 2 left: no free package spot at home.", OutcomeMessage.Describe(outcome));
+    }
+
+    [Fact]
+    public void One_package_reads_in_the_singular()
+    {
+        Assert.Equal("Unpacking 1 package.", OutcomeMessage.Describe(Done(queued: 1)));
+        Assert.Equal("Nothing unpacked. 1 left on the floor: your bag could not carry it.", OutcomeMessage.Describe(Done(floorRefused: 1)));
+        Assert.Equal("Nothing unpacked. 1 on the floor at home: go home to pick it up.", OutcomeMessage.Describe(Done(floorAway: 1)));
+    }
+
+    [Fact]
+    public void Every_reason_a_package_was_left_is_counted()
+    {
+        var outcome = Done(noSpot: 1, floorRefused: 2, floorAway: 3, unusable: 4, unusableReason: "Not while fighting");
+
+        Assert.Equal(
+            "Nothing unpacked. 1 left: no free package spot at home. 2 left on the floor: your bag could not carry them. 3 on the floor at home: go home to pick them up. 4 can't be unpacked right now: Not while fighting.",
+            OutcomeMessage.Describe(outcome));
+    }
+
+    [Theory]
+    [InlineData("Not while fighting.")]
+    [InlineData("Not while fighting!  ")]
+    [InlineData("Not while fighting...")]
+    public void The_game_reason_keeps_its_words_but_not_its_closing_mark(string reason)
+    {
+        Assert.Equal("Nothing unpacked. 1 can't be unpacked right now: Not while fighting.", OutcomeMessage.Describe(Done(unusable: 1, unusableReason: reason)));
+    }
+
+    [Fact]
+    public void A_chinese_reason_loses_its_full_stop_so_the_line_does_not_end_twice()
+    {
+        Assert.Equal("Nothing unpacked. 1 can't be unpacked right now: 当前无法使用.", OutcomeMessage.Describe(Done(unusable: 1, unusableReason: "当前无法使用。")));
+    }
+
+    [Fact]
+    public void A_refusal_without_a_reason_still_says_how_many()
+    {
+        Assert.Equal("Nothing unpacked. 2 can't be unpacked right now.", OutcomeMessage.Describe(Done(unusable: 2, unusableReason: "  ")));
+    }
+
+    [Fact]
+    public void A_busy_press_says_to_wait()
+    {
+        Assert.Equal("Already unpacking 2 packages. Press again once they are done.", OutcomeMessage.Describe(new UnpackOutcome.AlreadyUnpacking(2)));
+        Assert.Equal("Already unpacking 1 package. Press again once it is done.", OutcomeMessage.Describe(new UnpackOutcome.AlreadyUnpacking(1)));
+    }
+
+    [Fact]
+    public void Presses_that_did_nothing_say_why()
+    {
+        Assert.Equal("Can't unpack right now: load a save first.", OutcomeMessage.Describe(new UnpackOutcome.NotReady("load a save first")));
+        Assert.Equal("No packages in your bag or on the floor at home.", OutcomeMessage.Describe(new UnpackOutcome.NothingToUnpack()));
+        Assert.Equal("Could not start unpacking, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(new UnpackOutcome.StartFailed(2)));
+    }
+
+    private static UnpackOutcome Done(int queued = 0, int pickedUp = 0, int noSpot = 0, int floorRefused = 0, int floorAway = 0, int unusable = 0, string? unusableReason = null) =>
+        new UnpackOutcome.Done(new UnpackTally(queued, pickedUp, noSpot, floorRefused, floorAway, unusable, unusableReason));
+}
