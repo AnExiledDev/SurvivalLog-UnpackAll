@@ -1,69 +1,105 @@
-> **AI-written from operator direction.** The intent is the operator's; the wording and scope are an agent's.
-> `session: 127889d4-f8d8-4d17-8ded-f6f46da456fc | 2026-10-12 | source: op:2026-10-11-2128-6483`
-
 # Unpack All
 
-A BepInEx 6 (IL2CPP) plugin for Survival Log: one press unpacks every furniture package in your bag, then picks up the packages lying on the floor at home and unpacks those too, as far as your home has free package spots.
+One press unpacks every furniture package in your bag and on the floor at home.
 
-## What it does
+Unpacking furniture packages one at a time is slow, and lining up more unpacks than your home has room for fills the action queue with unpacks that fail. Unpack All unpacks every package in your bag, then picks up the packages lying on the floor at home and unpacks those too, as far as your home has free package spots.
 
-- Packages in your bag are unpacked first. If spots are left over, packages on the floor inside your home are picked up into your bag and unpacked as well.
-- Only as many unpacks are lined up as your home has free package spots, so every one of them runs and the queue bar never fills with unpacks that would fail. The rest stay where they are.
-- Each unpack goes through the game's own Use action for that package, the same one the inventory's Use button lines up, so the game's own checks and timings apply. Like the Use button, it sends your character to the package point nearest them first.
-- After starting, the mod checks that the unpacks really reached your character's queue and follows them until they are done. An unpack the game drops is never counted as unpacking: the message says how many were dropped, and a later line says so if an unpack ends without opening its package. The details go to the log.
-- A short message at the bottom of the screen says how many packages are unpacking, how many were picked up from the floor (and how many of those wait in your bag), and how many were left and why (no free package spot, your bag could not carry it, you are away from home, or the game's own reason for refusing).
+## Features
 
-## Controls
+- **Bag first, then the floor**: packages in your bag are unpacked first. If spots are left over, packages on the floor inside your home are picked up into your bag and unpacked as well.
+- **Never more than fits**: only as many unpacks are lined up as your home has free package spots, so every one of them can run and the queue bar never fills with unpacks that would fail. The rest stay where they are.
+- **The game's own Use action**: each unpack is the same action the inventory's Use button lines up, so the game's own checks and timings apply. Like the Use button, it sends your character to the package point nearest them first.
+- **Your queued actions stay**: unpacks join the end of your character's action queue, so actions you queued yourself run first.
+- **Clear messages**: a short message at the bottom of the screen says how many packages are unpacking, how many were picked up from the floor (and how many of those wait in your bag), and how many were left and why: no free package spot, your bag could not carry it, you are away from home, or the game's own reason for refusing.
+- **Follows up**: after starting, the mod checks that the unpacks really reached your character's queue and watches them until they are done. An unpack the game drops is never counted as unpacking: the message says how many were dropped, and a later message says so if an unpack ends without opening its package.
+- **Mods menu entry**: **Unpack all** in the inventory's Mods menu does the same as the key (see below).
+- **Log file**: every press, what was read and lined up, and how each batch ended, is written to `BepInEx\unpack-all.log`.
 
-- **Unpack all** in the Mods menu on the inventory screen's item tab, the button next to the game's Sort button. Other mods that use the same menu (Storage Hub does) list their actions there too. Esc or a click elsewhere closes it.
-- `F9` anywhere in a loaded game does the same. On the title screen and in the prologue it does nothing, and the menu entry is not shown there either.
+Unpack All adds no data of its own to your save. The unpacks are real: packages come off the floor into your bag and are unpacked into furniture, exactly as if you had used each one yourself. You can remove the mod at any time; packages and furniture stay as they are.
 
-Unpacks join the end of your character's action queue, so actions you queued yourself (taking adrenaline, say) stay and run first. While unpacks from an earlier press are still lined up, another press does nothing but say so: their spots are only freed as each one runs, so a second batch would have nowhere to go.
+## Hotkeys
 
-## Config
+| Key | What it does |
+| --- | --- |
+| `F9` | Unpacks every package in your bag, then the ones on the floor at home, up to your free package spots. |
 
-`BepInEx/config/com.dev.survivallog.unpackall.cfg`:
+`F9` works anywhere in a loaded game past the prologue. On the title screen and in the prologue it does nothing. It can be changed or turned off in the config.
 
-| Setting | Default | What it does |
-| --- | --- | --- |
-| `Controls/UnpackKey` | `F9` | Key that does the same as Unpack all in the Mods menu, which shows the key next to the entry. `None` turns the key off; the menu entry still works. |
+## The Mods menu
 
-Log: `BepInEx/unpack-all.log`.
+The mod adds a **Mods** button (a four-square icon) to the toolbar on the bag side of the inventory screen, between the game's discard and sort buttons. Click it to open a small menu with **Unpack all**, which shows the unpack key next to it and does the same as the key. Esc or a click anywhere else closes the menu, and the game's own hotkeys are held back while it is open so Esc closes only the menu.
 
-## Known limits
+The Unpack all entry only shows on the bag's item tab, and not in the prologue. Other mods that use the same Mods menu list their own entries in it, so you get one button instead of one per mod; when no mod has an entry to show, the button is taken away.
+
+The mod's menu entry and messages are in English. The game's own refusal reasons are shown as the game words them, which can be Chinese.
+
+## How it works
+
+Each press reads your bag, the floor at home and your home's free package spots. Packages in the bag get spots first. Then, if you are at home, floor packages are picked up while spots are left, and the ones that arrive in your bag get the remaining spots. Wave loot on the floor is left for the game's drone, and packages inside storages are not touched.
+
+While unpacks from an earlier press are still lined up, another press does nothing but say so: their spots are only freed as each one runs, so a second batch would have nowhere to go.
+
+## Known issues and limits
+
+This mod picks up items from the floor and unpacks them. Back up your save before trying it for the first time.
 
 - Packages beyond your free package spots stay in your bag or on the floor. Place some furniture to free spots, then press again.
 - Floor packages are only picked up while you are at home.
 - Packages inside storages are not touched, only your bag and the floor at home.
-- Starting the batch never throws away actions you queued. If the game is ever in its replace-the-queue action mode (it uses it before the disaster, where the mod stays off), a press while you have actions queued does nothing and says to finish or cancel them first.
 - The game picks up a floor stack whole. When packages stack and a floor stack holds more packages than the spots left, all of it comes into your bag: as many as there are spots unpack, and the message says how many wait in your bag for the next press.
-- A floor package the game refuses to unpack once it is in your bag stays in your bag; its spot goes to another floor package on the next press, not this one.
-- The game's refusal reasons are shown as the game words them, which can be Chinese. Colour and other rich-text tags in them are removed.
-- The message sits where Storage Hub's does; if both show at once, the newer one covers the other.
+- A floor package the game refuses to unpack once it is in your bag stays in your bag; its spot goes to another package on the next press, not this one.
+- Starting a batch never throws away actions you queued. If the game is ever in its replace-the-queue action mode while you have actions queued, a press does nothing and says "Finish or cancel your queued actions first."
+- Colour and other formatting tags in the game's refusal reasons are removed.
+- `BepInEx\unpack-all.log` is never trimmed. Delete it while the game is closed if it gets large.
+
+If a package goes missing, an unpack does not run, or the message does not match what happened, please tell me (see [Feedback](#feedback-and-bug-reports)).
+
+## Requirements
+
+- Survival Log 1.1.18317. Built and tested on this version; a game update can break it until the mod is updated.
+- The [BepInEx Pack for Survival Log](https://www.nexusmods.com/survivallog/mods/12), the BepInEx 6 (IL2CPP) build for the game.
 
 ## Install
 
-Copy `UnpackAll.dll` into `BepInEx/plugins`. Needs BepInEx 6 (IL2CPP build).
+1. Install the [BepInEx Pack for Survival Log](https://www.nexusmods.com/survivallog/mods/12) (if no other mods were installed before, start the game once so BepInEx finishes setup, then quit).
+2. Download `UnpackAll.dll` from the [latest release](https://github.com/AnExiledDev/SurvivalLog-UnpackAll/releases/latest) and put it in the `BepInEx\plugins` folder inside the game folder (the folder with the game .exe). Full path example: `C:\Program Files (x86)\Steam\steamapps\common\Survival Log\BepInEx\plugins\UnpackAll.dll`
 
-## Build and test
+## Uninstall
 
-```sh
-dotnet build src/UnpackAll -c Release -p:GameDir="D:\path\to\Survival Log"
+Delete `UnpackAll.dll` from the `BepInEx\plugins` folder. For a clean slate, also delete `BepInEx\config\com.dev.survivallog.unpackall.cfg` and `BepInEx\unpack-all.log`.
+
+## Configuration
+
+Settings live in `BepInEx\config\com.dev.survivallog.unpackall.cfg`, created the first time the game starts with the mod. Edit it while the game is closed; changes apply at the next game start. See [CONFIG.md](CONFIG.md) for every setting.
+
+## Troubleshooting
+
+Tested on Survival Log 1.1.18317 with BepInEx `6.0.0-be.788`.
+
+Check `BepInEx\LogOutput.log` for `===== Unpack All 0.1.1 started, key F9`. The same line, plus every press (what was in the bag and on the floor, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
+
+If Unpack all does not show in the Mods menu, make sure the inventory's item tab is open on the bag side. If a press says it cannot unpack right now, the rest of the message and the log say why.
+
+## Feedback and bug reports
+
+Found a bug, have an idea, or something feels off? Come say so on the Core Directive Discord: https://discord.gg/trTsyxUFqg . You can also leave a comment on the Nexus page or [open an issue](https://github.com/AnExiledDev/SurvivalLog-UnpackAll/issues). When reporting a bug, attach `BepInEx\LogOutput.log` and `BepInEx\unpack-all.log`.
+
+## Build
+
+This is a BepInEx 6 IL2CPP plugin. It compiles against BepInEx and the game's IL2CPP interop assemblies, so a game install with BepInEx set up and started once is required. Those assemblies come from the game and are not part of this repo. The .NET 8 SDK is required.
+
+```
+dotnet build src/UnpackAll -c Release -p:GameDir="C:\path\to\Survival Log"
+```
+
+`GameDir` is the game folder. The default in the project file is a local path you will almost certainly need to override. The output DLL is at `src\UnpackAll\bin\Release\UnpackAll.dll`.
+
+The unit tests cover the pure rules (what a package is, how spots are handed out, the follow-up watch and the messages) and need nothing from the game:
+
+```
 dotnet test tests/UnpackAll.Tests
 ```
 
-The build references BepInEx and the game's interop assemblies under `GameDir`, so BepInEx must be installed and the game launched once. The tests compile only the pure `Core` code and need nothing from the game.
-
 ## License
 
-MIT, see [LICENSE](LICENSE).
-
-## Provenance
-
-Operator, 2026-10-11 (op:2026-10-11-2128-6483):
-
-> Can we also create a mod to "unpack all" which also unpacks what's on the floor, for like placeable objects.
-
-From the same message, on the queue bar:
-
-> When queueing actions, like taking adrenaline or unpacking things, it queues it up many times, fills the queue bar, I just took 3 adrenaline at once lol.
+MIT. Copyright (c) 2026 AnExiledDev. See [LICENSE](LICENSE).
