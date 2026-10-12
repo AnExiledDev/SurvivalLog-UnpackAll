@@ -58,6 +58,13 @@ internal sealed class FakeGame : IPackageGame
 
     public bool FailsToStart { get; set; }
 
+    /// <summary>
+    /// How many of the lined-up unpacks the game throws away while starting them, though the start itself reports no
+    /// error: the unpack never reaches the character's queue and its package stays in the bag. This is what the game did
+    /// with an unpack aimed at the world's origin rather than at a package point.
+    /// </summary>
+    public int DropsOnStart { get; set; }
+
     public List<long> PickupsTried { get; } = new();
 
     public IEnumerable<long> Unpacking => Running.Where(id => id >= 0);
@@ -116,13 +123,18 @@ internal sealed class FakeGame : IPackageGame
     {
         if (FailsToStart) return false;
 
-        if (StartClearsQueue) Running = LinedUp.ToList();
-        else Running.AddRange(LinedUp);
+        var started = LinedUp.Skip(Math.Min(DropsOnStart, LinedUp.Count)).ToList();
+
+        if (StartClearsQueue) Running = started;
+        else Running.AddRange(started);
 
         LinedUp.Clear();
 
         return true;
     }
+
+    /// <summary>Like the game's own count, this sees only what reached the character's queue, never the unstarted line.</summary>
+    public int? UsesInQueue(IReadOnlyList<Package> packages) => Unpacking.Count(id => packages.Any(package => package.ItemId == id));
 
     private QueueOnStart WhatStartDoes()
     {

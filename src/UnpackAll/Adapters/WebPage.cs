@@ -9,7 +9,7 @@ namespace UnpackAll.Adapters;
 
 /// <summary>
 /// The mod's half that lives in the game's web UI: page.js, run in the root document the game's own pages sit in. It
-/// adds the Unpack all button to the inventory toolbar and shows the result toast. The web view can reload at any time
+/// puts Unpack all in the inventory toolbar's Mods menu and shows the result toast. The web view can reload at any time
 /// and lose the script, so it is checked for every couple of seconds and put back when the page says it is missing.
 /// </summary>
 internal sealed class WebPage
@@ -47,6 +47,12 @@ internal sealed class WebPage
     /// own guard makes the copy a no-op when it is already there.
     /// </summary>
     public void Status(string text) => Run(Script() + "\n;window.__slunpackall&&window.__slunpackall.status(" + JsText.Literal(text) + ");");
+
+    /// <summary>The unpack key's name for the Mods menu row; empty when the key is off.</summary>
+    public void ShowKey(string name) => Run("window.__slunpackall&&window.__slunpackall.setKey(" + JsText.Literal(name) + ")");
+
+    /// <summary>Closes the inventory's Mods menu, which any mod carrying the slmod-menu block in its page.js may have made.</summary>
+    public void CloseMenu() => Run("window.__slmodmenu&&window.__slmodmenu.close()");
 
     private bool Run(string javaScript)
     {

@@ -318,6 +318,56 @@ public class UnpackRunTests
     }
 
     [Fact]
+    public void An_unpack_the_game_drops_while_starting_is_never_reported_as_unpacking()
+    {
+        var game = new FakeGame { FreeSpots = 2, DropsOnStart = int.MaxValue, Bag = { Pkg(1) } };
+
+        var outcome = UnpackRun.Run(game);
+        var tally = Done(outcome);
+
+        Assert.Empty(game.Unpacking);
+        Assert.Equal(0, tally.Queued);
+        Assert.Equal(1, tally.Dropped);
+        Assert.DoesNotContain("Unpacking", OutcomeMessage.Describe(outcome));
+    }
+
+    [Fact]
+    public void Only_the_unpacks_that_reached_the_queue_count_as_unpacking()
+    {
+        var game = new FakeGame { FreeSpots = 3, DropsOnStart = 1, Bag = { Pkg(1), Pkg(2), Pkg(3) } };
+
+        var tally = Done(UnpackRun.Run(game));
+
+        Assert.Equal(new long[] { 2, 3 }, game.Unpacking);
+        Assert.Equal(2, tally.Queued);
+        Assert.Equal(1, tally.Dropped);
+    }
+
+    [Fact]
+    public void A_picked_up_package_whose_unpack_was_dropped_is_said_to_wait_in_the_bag()
+    {
+        var game = new FakeGame { FreeSpots = 1, DropsOnStart = int.MaxValue, Floor = { Pkg(10) } };
+
+        var tally = Done(UnpackRun.Run(game));
+
+        Assert.Contains(Pkg(10 + BagIdOffset), game.Bag);
+        Assert.Equal(1, tally.PickedUp);
+        Assert.Equal(1, tally.WaitingInBag);
+        Assert.Equal(0, tally.Queued);
+    }
+
+    [Fact]
+    public void Unpacks_that_reached_the_queue_drop_nothing()
+    {
+        var game = new FakeGame { FreeSpots = 2, Bag = { Pkg(1), Pkg(2) } };
+
+        var tally = Done(UnpackRun.Run(game));
+
+        Assert.Equal(2, tally.Queued);
+        Assert.Equal(0, tally.Dropped);
+    }
+
+    [Fact]
     public void Negative_free_spots_from_a_confused_read_unpack_nothing()
     {
         var game = new FakeGame { FreeSpots = -3, Bag = { Pkg(1) } };

@@ -106,6 +106,26 @@ public class OutcomeMessageTests
         Assert.Equal("Can't unpack right now: your home is not loaded.", OutcomeMessage.Describe(new UnpackOutcome.NotReady("<color=red>your home is not loaded</color>")));
     }
 
-    private static UnpackOutcome Done(int queued = 0, int pickedUp = 0, int waitingInBag = 0, int noSpot = 0, int floorRefused = 0, int floorAway = 0, int unusable = 0, string? unusableReason = null) =>
-        new UnpackOutcome.Done(new UnpackTally(queued, pickedUp, waitingInBag, noSpot, floorRefused, floorAway, unusable, unusableReason));
+    [Fact]
+    public void Unpacks_the_game_dropped_are_never_reported_as_unpacking()
+    {
+        Assert.Equal("Nothing unpacked. 1 dropped by the game before it started, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(Done(dropped: 1)));
+        Assert.Equal("Unpacking 1 package. 2 dropped by the game before they started, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(Done(queued: 1, dropped: 2)));
+    }
+
+    [Fact]
+    public void A_watch_where_every_unpack_used_its_package_says_nothing()
+    {
+        Assert.Null(OutcomeMessage.Describe(new WatchStep.Finished(Started: 2, Consumed: 2)));
+    }
+
+    [Fact]
+    public void A_watch_where_unpacks_ended_without_their_package_says_how_many()
+    {
+        Assert.Equal("1 unpack ended without opening its package, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(new WatchStep.Finished(Started: 1, Consumed: 0)));
+        Assert.Equal("2 of 3 unpacks ended without opening their packages, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(new WatchStep.Finished(Started: 3, Consumed: 1)));
+    }
+
+    private static UnpackOutcome Done(int queued = 0, int pickedUp = 0, int waitingInBag = 0, int noSpot = 0, int floorRefused = 0, int floorAway = 0, int unusable = 0, string? unusableReason = null, int dropped = 0) =>
+        new UnpackOutcome.Done(new UnpackTally(queued, pickedUp, waitingInBag, noSpot, floorRefused, floorAway, unusable, unusableReason, dropped));
 }
