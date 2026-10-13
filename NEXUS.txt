@@ -1,12 +1,12 @@
 Name: Unpack All
-Summary: One press unpacks every furniture package in your bag, then the ones on the floor and in your storages at home, as far as your home has free package spots. F9 or the inventory's Mods menu.
+Summary: One press unpacks every furniture package in your bag, then the ones on the floor at home (and in your storages, if you turn that on), as far as your home has free package spots. F9 or the inventory's Mods menu.
 
 Description (BBCode):
-Unpacking furniture packages one at a time is slow, and lining up too many fills the queue with unpacks that fail. Unpack All unpacks everything in your bag, on the floor at home and in your storages at home in one press, and never lines up more than your home has room for.
+Unpacking furniture packages one at a time is slow, and lining up too many fills the queue with unpacks that fail. Unpack All unpacks everything in your bag and on the floor at home in one press, and never lines up more than your home has room for. It can also take packages out of your storages at home if you turn that on in the config.
 
 [size=5]Main features[/size]
 [list]
-[*][b]Bag first, then the floor, then storages[/b]: packages on the floor at home are picked up, then packages in the storages at home you can see are taken out, and unpacked while spots are left. Storages can be turned off in the config.[/*]
+[*][b]Bag first, then the floor, then storages[/b]: packages on the floor at home are picked up, then, if you turn it on in the config, packages in the storages at home you can see are taken out, and unpacked while spots are left. Storages are off by default.[/*]
 [*][b]Never more than fits[/b]: only as many unpacks as your home has free package spots. The rest stay where they are.[/*]
 [*][b]Game's own Use action[/b]: the same action as the inventory's Use button, with the game's checks and timings.[/*]
 [*][b]Your queued actions stay[/b]: unpacks join the end of the queue, so your own actions run first.[/*]
@@ -50,7 +50,7 @@ If you run into anything strange, please tell me (see Feedback below).
 Delete [font=Courier New]UnpackAll.dll[/font] from the [font=Courier New]BepInEx&#92;plugins[/font] folder.
 
 [size=5]Configuration[/size]
-To change the key or turn storages off, edit [font=Courier New]BepInEx&#92;config&#92;com.dev.survivallog.unpackall.cfg[/font] while the game is closed (see [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll/blob/main/CONFIG.md]CONFIG.md[/url]). Changes apply at the next game start.
+To change the key or turn storages on, edit [font=Courier New]BepInEx&#92;config&#92;com.dev.survivallog.unpackall.cfg[/font] while the game is closed (see [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll/blob/main/CONFIG.md]CONFIG.md[/url]). Changes apply at the next game start.
 
 [size=5]Feedback[/size]
 Found a bug or have an idea? Come say hi on the [url=https://discord.gg/trTsyxUFqg]Core Directive Discord[/url], or leave a comment here. For bugs, please include [font=Courier New]BepInEx&#92;LogOutput.log[/font] and [font=Courier New]BepInEx&#92;unpack-all.log[/font].

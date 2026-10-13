@@ -1,12 +1,12 @@
 # Unpack All
 
-One press unpacks every furniture package in your bag, on the floor at home and in your storages at home.
+One press unpacks every furniture package in your bag and on the floor at home, and in your storages at home if you turn that on.
 
-Unpacking furniture packages one at a time is slow, and lining up more unpacks than your home has room for fills the action queue with unpacks that fail. Unpack All unpacks every package in your bag, then picks up the packages lying on the floor at home, then takes packages out of your storages at home, and unpacks those too, as far as your home has free package spots.
+Unpacking furniture packages one at a time is slow, and lining up more unpacks than your home has room for fills the action queue with unpacks that fail. Unpack All unpacks every package in your bag, then picks up the packages lying on the floor at home and unpacks those too, as far as your home has free package spots. With `IncludeStorages` turned on in the config, it then takes packages out of your storages at home and unpacks those as well.
 
 ## Features
 
-- **Bag first, then the floor, then storages**: packages in your bag are unpacked first. If spots are left over, packages on the floor inside your home are picked up into your bag and unpacked as well. If spots are still left after that, packages in the storages at home you can see are moved into your bag and unpacked, as long as their stack fits the spots left. This last step can be turned off in the config.
+- **Bag first, then the floor, then storages**: packages in your bag are unpacked first. If spots are left over, packages on the floor inside your home are picked up into your bag and unpacked as well. If spots are still left after that and `IncludeStorages` is on, packages in the storages at home you can see are moved into your bag and unpacked, as long as their stack fits the spots left. This last step is off until you turn it on in the config.
 - **Never more than fits**: only as many unpacks are lined up as your home has free package spots, so every one of them can run and the queue bar never fills with unpacks that would fail. The rest stay where they are.
 - **The game's own Use action**: each unpack is the same action the inventory's Use button lines up, so the game's own checks and timings apply. Like the Use button, it sends your character to the package point nearest them first.
 - **Your queued actions stay**: unpacks join the end of your character's action queue, so actions you queued yourself run first.
@@ -21,7 +21,7 @@ Unpack All adds no data of its own to your save. The unpacks are real: packages 
 
 | Key | What it does |
 | --- | --- |
-| `F9` | Unpacks every package in your bag, then the ones on the floor at home and, if `IncludeStorages` is on, the ones in storages at home, up to your free package spots. |
+| `F9` | Unpacks the packages in your bag first, then the ones on the floor at home, up to your free package spots. If `IncludeStorages` is `true`, packages in storages at home are unpacked last. |
 
 `F9` works anywhere in a loaded game past the prologue. On the title screen and in the prologue it does nothing. It can be changed or turned off in the config.
 
@@ -35,7 +35,7 @@ The mod's menu entry and messages are in English. The game's own refusal reasons
 
 ## How it works
 
-Each press reads your bag, the floor at home, your storages at home and your home's free package spots. Packages in the bag get spots first. Then, if you are at home, floor packages are picked up while spots are left, and the ones that arrive in your bag get the remaining spots. Then the storage stacks that together fill the most of the spots still left are moved into your bag, whole, the same way a click moves them with the storage open, and they get the spots that remain. Wave loot on the floor is left for the game's drone.
+Each press reads your bag, the floor at home, your storages at home (when `IncludeStorages` is on) and your home's free package spots. Packages in the bag get spots first. Then, if you are at home, floor packages are picked up while spots are left, and the ones that arrive in your bag get the remaining spots. Then, with `IncludeStorages` on, the storage stacks that together fill the most of the spots still left are moved into your bag, whole, the same way a click moves them with the storage open, and they get the spots that remain. Wave loot on the floor is left for the game's drone.
 
 Storages means the storages at home you can see. Locked storages, the drone hub and drones, the neighbour gift basket, the door box, and the bins of a brew barrel, shredder, compressor, dye vat or greenhouse are left alone. A package the game would refuse to unpack stays in its storage.
 
@@ -82,9 +82,9 @@ Settings live in `BepInEx\config\com.dev.survivallog.unpackall.cfg`, created the
 
 Tested on Survival Log 1.1.18317 with BepInEx `6.0.0-be.788`.
 
-Check `BepInEx\LogOutput.log` for `===== Unpack All 0.2.0 started, key F9, storages on`. The same line, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
+Check `BepInEx\LogOutput.log` for `===== Unpack All 0.3.0 started, key F9, storages off`. The same line, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
 
-If Unpack all does not show in the Mods menu, make sure the inventory's item tab is open on the bag side. If a press says it cannot unpack right now, the rest of the message and the log say why. If storage packages are not taken, check that no storage or workbench window is open and that `IncludeStorages` is `true` in the config.
+If Unpack all does not show in the Mods menu, make sure the inventory's item tab is open on the bag side. If a press says it cannot unpack right now, the rest of the message and the log say why. If storage packages are not taken, check that `IncludeStorages` is `true` in the config and that no storage or workbench window is open.
 
 ## Feedback and bug reports
 
