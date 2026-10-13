@@ -6,7 +6,7 @@ Settings live in `BepInEx\config\com.dev.survivallog.unpackall.cfg`, created the
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| `UnpackKey` | `F9` | Key that unpacks every package in your bag, then the ones on the floor at home and, if `IncludeStorages` is on, the ones in storages at home, up to your free package spots. `None` turns the key off; Unpack all in the inventory's Mods menu still works. |
+| `UnpackKey` | `F9` | Key that unpacks the packages in your bag first, then the ones on the floor at home, up to your free package spots. If `IncludeStorages` is `true`, packages in storages at home are unpacked last. `None` turns the key off, but Unpack all in the inventory's Mods menu still works. |
 
 The value is a Unity key name, for example `F9`, `F11`, `Insert` or `Keypad5`. With `None`, the Mods menu entry shows no key.
 
@@ -14,6 +14,6 @@ The value is a Unity key name, for example `F9`, `F11`, `Insert` or `Keypad5`. W
 
 | Setting | Default | What it does |
 | --- | --- | --- |
-| `IncludeStorages` | `true` | Also unpack packages kept in storages at home you can see, after the bag and the floor. They are moved into your bag first, the same as taking them out by hand, and only a stack that fits your free package spots; a bigger stack stays in its storage. Nothing is taken out while a storage, workbench or shop window is open. `false` leaves storages alone. |
+| `IncludeStorages` | `false` | When `true`, packages in storages at home are unpacked too, after the bag and the floor. A storage stack is moved into your bag only if all of it fits your free package spots, and nothing is taken while a storage, workbench, shop or trade window is open. `false`, the default, leaves storages alone. |
 
 Locked storages, the drone hub and drones, the neighbour gift basket, the door box, and the bins of a brew barrel, shredder, compressor, dye vat or greenhouse are never touched. A storage stack that holds more packages than your free spots stays in its storage until you have room for all of it.
