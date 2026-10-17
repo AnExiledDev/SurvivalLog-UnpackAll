@@ -10,13 +10,16 @@ namespace UnpackAll.Adapters;
 /// </summary>
 internal sealed class UnpackSession
 {
-    private const string FailedStatus = "Unpack All failed, see BepInEx/unpack-all.log.";
+    private const float LanguageLookSeconds = 1f;
 
     private readonly GamePackages _game;
     private readonly WebPage _page;
     private readonly KeyCode _unpackKey;
     private readonly Action<string> _log;
     private readonly UnpackWatcher _watcher;
+
+    private bool? _shownChinese;
+    private float _nextLanguageLook;
 
     public UnpackSession(GamePackages game, WebPage page, KeyCode unpackKey, Action<string> log)
     {
@@ -31,12 +34,28 @@ internal sealed class UnpackSession
     {
         _page.KeepInstalled(Time.unscaledTime);
         _watcher.Tick(Time.unscaledTime);
+        KeepLanguage(Time.unscaledTime);
 
         var isPressed = TakePageCommands();
 
         if (HotkeyGate.IsMenuOpen && Input.GetKeyDown(KeyCode.Escape)) CloseMenu();
         if (_unpackKey != KeyCode.None && Input.GetKeyDown(_unpackKey)) isPressed = true;
         if (isPressed) UnpackAll();
+    }
+
+    /// <summary>The player can switch the game's language at any time, so it is read once a second and the menu row follows.</summary>
+    private void KeepLanguage(float now)
+    {
+        if (now < _nextLanguageLook) return;
+
+        _nextLanguageLook = now + LanguageLookSeconds;
+
+        var isChinese = GameLanguage.IsChinese();
+
+        if (isChinese == _shownChinese) return;
+
+        _shownChinese = isChinese;
+        _page.ShowMenuText(Texts.MenuLabel.Pick(isChinese), Texts.MenuTitle.Pick(isChinese));
     }
 
     private void CloseMenu()
@@ -68,6 +87,8 @@ internal sealed class UnpackSession
                     // A reloaded page has no menu, and one left marked open would hold the game's hotkeys for good.
                     HotkeyGate.MenuClosed();
                     _page.ShowKey(_unpackKey == KeyCode.None ? "" : _unpackKey.ToString());
+                    // A reloaded page shows the English row again, so the next language look renames it.
+                    _shownChinese = null;
                     break;
                 case PageCommand.NoScript:
                     HotkeyGate.MenuClosed();
@@ -89,7 +110,7 @@ internal sealed class UnpackSession
         try
         {
             var outcome = UnpackRun.Run(_game);
-            var message = OutcomeMessage.Describe(outcome);
+            var message = OutcomeMessage.Describe(outcome, GameLanguage.IsChinese());
 
             _log($"press: {outcome} -> {message ?? "(no message)"}");
 
@@ -99,7 +120,7 @@ internal sealed class UnpackSession
         catch (Exception ex)
         {
             _log("press failed: " + ex);
-            _page.Status(FailedStatus);
+            _page.Status(Texts.Failed.Pick(GameLanguage.IsChinese()));
         }
     }
 }

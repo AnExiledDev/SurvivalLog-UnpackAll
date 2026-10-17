@@ -51,6 +51,10 @@ internal sealed class WebPage
     /// <summary>The unpack key's name for the Mods menu row; empty when the key is off.</summary>
     public void ShowKey(string name) => Run("window.__slunpackall&&window.__slunpackall.setKey(" + JsText.Literal(name) + ")");
 
+    /// <summary>Names the menu row and its tooltip in the game's language.</summary>
+    public void ShowMenuText(string label, string title) =>
+        Run("window.__slunpackall&&window.__slunpackall.setText(" + JsText.Literal(label) + "," + JsText.Literal(title) + ")");
+
     /// <summary>Closes the inventory's Mods menu, which any mod carrying the slmod-menu block in its page.js may have made.</summary>
     public void CloseMenu() => Run("window.__slmodmenu&&window.__slmodmenu.close()");
 

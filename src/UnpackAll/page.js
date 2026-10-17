@@ -451,6 +451,11 @@
     slmodMenu.update(MENU_ID, { hotkey: name || '' });
   }
 
+  // The plugin names the menu row in the game's language once the page is ready and whenever the language changes.
+  function setText(label, title) {
+    slmodMenu.update(MENU_ID, { label: label, title: title });
+  }
+
   // Reads the inventory page's Vue state, which a game update can rename; failing open shows the button on every
   // tab, so the first failure is reported.
   function backpackTabWantsButton(doc) {
@@ -510,6 +515,6 @@
     } catch (e) {}
   }, 400);
 
-  window.__slunpackall = { status: status, setKey: setKey };
+  window.__slunpackall = { status: status, setKey: setKey, setText: setText };
   send('ready');
 })();

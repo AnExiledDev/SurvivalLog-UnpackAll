@@ -159,6 +159,47 @@ public class OutcomeMessageTests
         Assert.Equal("2 of 3 unpacks ended without opening their packages, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(new WatchStep.Finished(Started: 3, Consumed: 1)));
     }
 
+    [Fact]
+    public void A_chinese_game_gets_the_whole_toast_in_chinese()
+    {
+        var outcome = Done(queued: 3, pickedUp: 1, waitingInBag: 1, noSpot: 2, unusable: 1, unusableReason: "战斗中无法使用。");
+
+        Assert.Equal(
+            "正在拆封 3 个包裹。从地上捡起 1 个，1 个在背包里等待拆封。2 个未拆：家里没有空余的包裹位。1 个现在无法拆封：战斗中无法使用。",
+            OutcomeMessage.Describe(outcome, isChinese: true));
+    }
+
+    [Fact]
+    public void Every_chinese_storage_line_is_counted()
+    {
+        var outcome = Done(fromStorage: 2, storageRefused: 1, storageAway: 3, storageBehindPanel: 4, storageUnchecked: 5, storageTooBig: 6);
+
+        Assert.Equal(
+            "没有拆封任何包裹。从储物家具取出 2 个。1 个留在储物家具中：背包装不下。3 个在家里的储物家具中：回家后才能拆封。4 个留在储物家具中：请关闭打开的界面后再按一次。5 个留在储物家具中：无法检查是否有打开的界面，详见 BepInEx/unpack-all.log。6 个留在储物家具中：一组包裹超过了空余的包裹位。",
+            OutcomeMessage.Describe(outcome, isChinese: true));
+    }
+
+    [Fact]
+    public void Chinese_presses_that_did_nothing_say_why_in_chinese()
+    {
+        Assert.Equal("现在无法拆封：先读取存档。", OutcomeMessage.Describe(new UnpackOutcome.NotReady("先读取存档。"), isChinese: true));
+        Assert.Equal("正在拆封 2 个包裹，拆完后再按一次。", OutcomeMessage.Describe(new UnpackOutcome.AlreadyUnpacking(2), isChinese: true));
+        Assert.Equal("背包和家里地上都没有包裹。", OutcomeMessage.Describe(new UnpackOutcome.NothingToUnpack(), isChinese: true));
+        Assert.Equal("背包、家里地上和储物家具中都没有包裹。", OutcomeMessage.Describe(new UnpackOutcome.NothingToUnpack(HasLookedInStorages: true), isChinese: true));
+        Assert.Equal("请先完成或取消排队中的行动。", OutcomeMessage.Describe(new UnpackOutcome.QueueBusy(), isChinese: true));
+        Assert.Equal(
+            "无法开始拆封，详见 BepInEx/unpack-all.log。从地上捡起 1 个，并从储物家具取出 2 个，3 个在背包里等待拆封。",
+            OutcomeMessage.Describe(new UnpackOutcome.StartFailed(3, 1, 2), isChinese: true));
+    }
+
+    [Fact]
+    public void A_chinese_watch_says_how_many_unpacks_left_their_package_unopened()
+    {
+        Assert.Null(OutcomeMessage.Describe(new WatchStep.Finished(Started: 2, Consumed: 2), isChinese: true));
+        Assert.Equal("1 次拆封结束时没有打开包裹，详见 BepInEx/unpack-all.log。", OutcomeMessage.Describe(new WatchStep.Finished(Started: 1, Consumed: 0), isChinese: true));
+        Assert.Equal("3 次拆封中有 2 次结束时没有打开包裹，详见 BepInEx/unpack-all.log。", OutcomeMessage.Describe(new WatchStep.Finished(Started: 3, Consumed: 1), isChinese: true));
+    }
+
     private static UnpackOutcome Done(
         int queued = 0,
         int pickedUp = 0,

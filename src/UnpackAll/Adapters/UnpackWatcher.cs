@@ -89,7 +89,7 @@ internal sealed class UnpackWatcher
 
     private void Finish(WatchStep.Finished finished)
     {
-        var message = OutcomeMessage.Describe(finished);
+        var message = OutcomeMessage.Describe(finished, GameLanguage.IsChinese());
 
         _log($"watch: done, {finished.Consumed} of {finished.Started} started unpack(s) used their package -> {message ?? "(no message)"}");
 

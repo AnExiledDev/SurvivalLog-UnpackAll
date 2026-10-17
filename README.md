@@ -31,7 +31,7 @@ The mod adds a **Mods** button (a four-square icon) to the toolbar on the bag si
 
 The Unpack all entry only shows on the bag's item tab, and not in the prologue. Other mods that use the same Mods menu list their own entries in it, so you get one button instead of one per mod; when no mod has an entry to show, the button is taken away.
 
-The mod's menu entry and messages are in English. The game's own refusal reasons are shown as the game words them, which can be Chinese.
+The Unpack all entry, its tooltip and the messages follow the game's language, English or Simplified Chinese, and switch within a second when you change it. The shared Mods button and its tooltip stay in English. The game's own refusal reasons are shown as the game words them.
 
 ## How it works
 
@@ -62,7 +62,7 @@ If a package goes missing, an unpack does not run, or the message does not match
 
 ## Requirements
 
-- Survival Log 1.1.18317. Built and tested on this version; a game update can break it until the mod is updated.
+- Survival Log 1.1.18902. Built and tested on this version; a game update can break it until the mod is updated.
 - The [BepInEx Pack for Survival Log](https://www.nexusmods.com/survivallog/mods/12), the BepInEx 6 (IL2CPP) build for the game.
 
 ## Install
@@ -76,13 +76,13 @@ Delete `UnpackAll.dll` from the `BepInEx\plugins` folder. For a clean slate, als
 
 ## Configuration
 
-Settings live in `BepInEx\config\com.dev.survivallog.unpackall.cfg`, created the first time the game starts with the mod. Edit it while the game is closed; changes apply at the next game start. See [CONFIG.md](CONFIG.md) for every setting.
+Settings live in `BepInEx\config\com.dev.survivallog.unpackall.cfg`, created the first time the game starts with the mod. Edit it while the game is closed; changes apply at the next game start. Each setting in the cfg file is explained in English and Simplified Chinese. See [CONFIG.md](CONFIG.md) for every setting.
 
 ## Troubleshooting
 
-Tested on Survival Log 1.1.18317 with BepInEx `6.0.0-be.788`.
+Tested on Survival Log 1.1.18902 with BepInEx `6.0.0-be.788`.
 
-Check `BepInEx\LogOutput.log` for `===== Unpack All 0.3.0 started, key F9, storages off`. The same line, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
+Check `BepInEx\LogOutput.log` for `===== Unpack All 0.3.1 started, key F9, storages off`. The same line, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
 
 If Unpack all does not show in the Mods menu, make sure the inventory's item tab is open on the bag side. If a press says it cannot unpack right now, the rest of the message and the log say why. If storage packages are not taken, check that `IncludeStorages` is `true` in the config and that no storage or workbench window is open.
 

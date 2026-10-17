@@ -1,0 +1,124 @@
+Name: Unpack All
+Summary: One press unpacks every furniture package in your bag, then the ones on the floor at home (and in your storages, if you turn that on), as far as your home has free package spots. F9 or the inventory's Mods menu. 一键拆封背包里的所有家具包裹，再拆封家里地上的包裹（开启后还包括储物家具中的包裹），数量以家里空余的包裹位为限。按 F9 或使用背包界面的 Mods 菜单。
+
+Description (BBCode):
+Unpacking furniture packages one at a time is slow, and lining up too many fills the queue with unpacks that fail. Unpack All unpacks everything in your bag and on the floor at home in one press, and never lines up more than your home has room for. It can also take packages out of your storages at home if you turn that on in the config.
+
+[size=5]Main features[/size]
+[list]
+[*][b]Bag first, then the floor, then storages[/b]: packages on the floor at home are picked up, then, if you turn it on in the config, packages in the storages at home you can see are taken out, and unpacked while spots are left. Storages are off by default.[/*]
+[*][b]Never more than fits[/b]: only as many unpacks as your home has free package spots. The rest stay where they are.[/*]
+[*][b]Game's own Use action[/b]: the same action as the inventory's Use button, with the game's checks and timings.[/*]
+[*][b]Your queued actions stay[/b]: unpacks join the end of the queue, so your own actions run first.[/*]
+[*][b]Clear messages[/b]: says how many are unpacking, how many were picked up or taken from storages, and why any were left.[/*]
+[*][b]Mods menu[/b]: a Mods button on the inventory toolbar with an Unpack all entry, shared with other mods that use it.[/*]
+[/list]
+
+[size=5]Hotkeys[/size]
+[list]
+[*][b]F9[/b]: unpack all (in a loaded game, past the prologue).[/*]
+[/list]
+F9 can be changed or turned off in the config. Unpack all in the Mods menu works either way.
+
+Works in English and Chinese.
+
+The mod adds no data of its own to your save, but the unpacks are real: packages come off the floor or out of your storages into your bag and become furniture. You can remove it at any time; packages and furniture stay as they are.
+
+[size=5]Known issues[/size]
+[list]
+[*]Back up your save before trying it for the first time.[/*]
+[*]Packages beyond your free package spots stay where they are. Place some furniture, then press again.[/*]
+[*]Floor and storage packages are only taken while you are at home, and nothing leaves a storage while a storage, workbench or shop window is open.[/*]
+[*]Locked storages, the drone hub and drones, the neighbour gift basket, the door box and workstation bins are never touched.[/*]
+[*]The game picks up a floor stack whole, so some packages can end up waiting in your bag for the next press. A storage stack bigger than your free spots stays in its storage.[/*]
+[*]The game's own refusal reasons are shown as the game words them, which can be Chinese.[/*]
+[*]The shared Mods button and its tooltip stay in English.[/*]
+[/list]
+If you run into anything strange, please tell me (see Feedback below).
+
+[size=5]Requirements[/size]
+[list]
+[*]Survival Log 1.1.18902. A game update can break it until the mod is updated.[/*]
+[*][url=https://www.nexusmods.com/survivallog/mods/12]BepInEx for Survival Log[/url]. Install it first.[/*]
+[/list]
+
+[size=5]Installation[/size]
+[list=1]
+[*]Install [url=https://www.nexusmods.com/survivallog/mods/12]BepInEx[/url] [i](if no other mods were installed before, start the game once so BepInEx finishes setup, then quit)[/i].[/*]
+[*]Put [font=Courier New]UnpackAll.dll[/font] in the BepInEx&#92;plugins folder inside the game folder. Full path example:
+[code]C:&#92;Program Files (x86)&#92;Steam&#92;steamapps&#92;common&#92;Survival Log&#92;BepInEx&#92;plugins&#92;UnpackAll.dll[/code][/*]
+[/list]
+
+[size=5]Uninstall[/size]
+Delete [font=Courier New]UnpackAll.dll[/font] from the [font=Courier New]BepInEx&#92;plugins[/font] folder.
+
+[size=5]Configuration[/size]
+To change the key or turn storages on, edit [font=Courier New]BepInEx&#92;config&#92;com.dev.survivallog.unpackall.cfg[/font] while the game is closed (see [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll/blob/main/CONFIG.md]CONFIG.md[/url]; the cfg file explains each setting in English and Chinese). Changes apply at the next game start.
+
+[size=5]Feedback[/size]
+Found a bug or have an idea? Come say hi on the [url=https://discord.gg/trTsyxUFqg]Core Directive Discord[/url], or leave a comment here. For bugs, please include [font=Courier New]BepInEx&#92;LogOutput.log[/font] and [font=Courier New]BepInEx&#92;unpack-all.log[/font].
+
+[size=5]Source and license[/size]
+Open source under MIT: [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll]github.com/AnExiledDev/SurvivalLog-UnpackAll[/url]
+
+[line]
+[size=5]简体中文[/size]
+
+一个一个拆家具包裹很慢，一次排太多又会让行动队列塞满会失败的拆封。Unpack All 一键拆封背包里和家里地上的所有包裹，而且排进队列的数量绝不超过家里的空位。在配置中开启后，还能从家里的储物家具中取出包裹一起拆封。
+
+[size=5]主要功能[/size]
+[list]
+[*][b]先背包，再地上，最后储物家具[/b]：先拆封背包里的包裹，然后捡起家里地上的包裹；如果在配置中开启，还会取出家里可见储物家具中的包裹，在还有空位时一起拆封。储物家具默认关闭。[/*]
+[*][b]绝不超出空位[/b]：排进队列的拆封数量不超过家里空余的包裹位，其余的原地不动。[/*]
+[*][b]游戏自己的使用动作[/b]：和背包界面「使用」按钮相同的动作，遵循游戏自己的检查和时间。[/*]
+[*][b]保留你排好的行动[/b]：拆封加在队列末尾，你自己排的行动先执行。[/*]
+[*][b]清楚的提示[/b]：告诉你正在拆封多少个、从地上捡起或从储物家具取出多少个，以及剩下的为什么没拆。[/*]
+[*][b]Mods 菜单[/b]：背包工具栏上的 Mods 按钮，里面有「全部拆封」一项，和其他使用同一菜单的模组共用。[/*]
+[/list]
+
+[size=5]快捷键[/size]
+[list]
+[*][b]F9[/b]：全部拆封（在已读取的存档中、序章之后）。[/*]
+[/list]
+F9 可以在配置中修改或关闭。无论如何，Mods 菜单里的「全部拆封」都能用。
+
+模组不会往存档里写入自己的数据，但拆封是真实的：包裹会从地上或储物家具进入背包，再变成家具。你可以随时移除模组，包裹和家具都会保持原样。
+
+支持英文和中文。
+
+[size=5]已知问题[/size]
+[list]
+[*]第一次使用前请备份存档。[/*]
+[*]超出空余包裹位的包裹会留在原处。摆放一些家具后再按一次。[/*]
+[*]只有在家时才会拿取地上和储物家具中的包裹；开着储物、工作台或商店界面时，不会从储物家具中取出任何东西。[/*]
+[*]上锁的储物家具、无人机站和无人机、邻居礼物篮、门口箱子以及工作台的料仓永远不会被动用。[/*]
+[*]游戏会整组捡起地上的包裹，所以有些包裹可能留在背包里等下次再拆。比空位还大的一组储物包裹会留在储物家具中。[/*]
+[*]游戏自己的拒绝原因按游戏原文显示。[/*]
+[*]共用的 Mods 按钮及其提示保持英文。[/*]
+[/list]
+如果遇到任何奇怪的情况，请告诉我（见下方反馈）。
+
+[size=5]前置要求[/size]
+[list]
+[*]Survival Log 1.1.18902。游戏更新后模组可能暂时失效，直到模组更新为止。[/*]
+[*][url=https://www.nexusmods.com/survivallog/mods/12]BepInEx for Survival Log[/url]，请先安装。[/*]
+[/list]
+
+[size=5]安装[/size]
+[list=1]
+[*]安装 [url=https://www.nexusmods.com/survivallog/mods/12]BepInEx[/url] [i]（如果之前没有装过其他模组，先启动一次游戏，让 BepInEx 完成初始化，然后退出）[/i]。[/*]
+[*]把 [font=Courier New]UnpackAll.dll[/font] 放进游戏目录下的 BepInEx&#92;plugins 文件夹。完整路径示例：
+[code]C:&#92;Program Files (x86)&#92;Steam&#92;steamapps&#92;common&#92;Survival Log&#92;BepInEx&#92;plugins&#92;UnpackAll.dll[/code][/*]
+[/list]
+
+[size=5]卸载[/size]
+从 [font=Courier New]BepInEx&#92;plugins[/font] 文件夹中删除 [font=Courier New]UnpackAll.dll[/font]。
+
+[size=5]配置[/size]
+如需修改按键或开启储物家具，请在游戏关闭时编辑 [font=Courier New]BepInEx&#92;config&#92;com.dev.survivallog.unpackall.cfg[/font]。配置文件中每项设置都有中文说明，完整说明见 [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll/blob/main/CONFIG.md]CONFIG.md[/url]（英文）。修改会在下次启动游戏时生效。
+
+[size=5]反馈[/size]
+发现 bug 或有好点子？欢迎来 [url=https://discord.gg/trTsyxUFqg]Core Directive Discord[/url] 打个招呼，或在这里留言。报告 bug 时，请附上 [font=Courier New]BepInEx&#92;LogOutput.log[/font] 和 [font=Courier New]BepInEx&#92;unpack-all.log[/font]。
+
+[size=5]源代码与许可[/size]
+基于 MIT 许可开源：[url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll]github.com/AnExiledDev/SurvivalLog-UnpackAll[/url]
