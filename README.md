@@ -45,8 +45,6 @@ While unpacks from an earlier press are still lined up, another press does nothi
 
 ## Known issues and limits
 
-This mod picks up items from the floor and unpacks them. Back up your save before trying it for the first time.
-
 - Packages beyond your free package spots stay in your bag, on the floor or in your storages. Place some furniture to free spots, then press again.
 - Floor and storage packages are only taken while you are at home.
 - Storage packages are taken only after the bag and the floor, so they never take a spot a floor package could use.
@@ -55,10 +53,6 @@ This mod picks up items from the floor and unpacks them. Back up your save befor
 - The game picks up a floor stack whole. When packages stack and a floor stack holds more packages than the spots left, all of it comes into your bag: as many as there are spots unpack, and the message says how many wait in your bag for the next press.
 - A floor package the game refuses to unpack once it is in your bag stays in your bag; its spot goes to another package on the next press, not this one.
 - Starting a batch never throws away actions you queued. If the game is ever in its replace-the-queue action mode while you have actions queued, a press does nothing and says "Finish or cancel your queued actions first."
-- Colour and other formatting tags in the game's refusal reasons are removed.
-- `BepInEx\unpack-all.log` is never trimmed. Delete it while the game is closed if it gets large.
-
-If a package goes missing, an unpack does not run, or the message does not match what happened, please tell me (see [Feedback](#feedback-and-bug-reports)).
 
 ## Requirements
 

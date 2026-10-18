@@ -26,7 +26,6 @@ The mod adds no data of its own to your save, but the unpacks are real: packages
 
 [size=5]Known issues[/size]
 [list]
-[*]Back up your save before trying it for the first time.[/*]
 [*]Packages beyond your free package spots stay where they are. Place some furniture, then press again.[/*]
 [*]Floor and storage packages are only taken while you are at home, and nothing leaves a storage while a storage, workbench or shop window is open.[/*]
 [*]Locked storages, the drone hub and drones, the neighbour gift basket, the door box and workstation bins are never touched.[/*]
@@ -34,7 +33,6 @@ The mod adds no data of its own to your save, but the unpacks are real: packages
 [*]The game's own refusal reasons are shown as the game words them, which can be Chinese.[/*]
 [*]The shared Mods button and its tooltip stay in English.[/*]
 [/list]
-If you run into anything strange, please tell me (see Feedback below).
 
 [size=5]Requirements[/size]
 [list]
@@ -89,7 +87,6 @@ F9 可以在配置中修改或关闭。无论如何，Mods 菜单里的「全部
 
 [size=5]已知问题[/size]
 [list]
-[*]第一次使用前请备份存档。[/*]
 [*]超出空余包裹位的包裹会留在原处。摆放一些家具后再按一次。[/*]
 [*]只有在家时才会拿取地上和储物家具中的包裹；开着储物、工作台或商店界面时，不会从储物家具中取出任何东西。[/*]
 [*]上锁的储物家具、无人机站和无人机、邻居礼物篮、门口箱子以及工作台的料仓永远不会被动用。[/*]
@@ -97,7 +94,6 @@ F9 可以在配置中修改或关闭。无论如何，Mods 菜单里的「全部
 [*]游戏自己的拒绝原因按游戏原文显示。[/*]
 [*]共用的 Mods 按钮及其提示保持英文。[/*]
 [/list]
-如果遇到任何奇怪的情况，请告诉我（见下方反馈）。
 
 [size=5]前置要求[/size]
 [list]
