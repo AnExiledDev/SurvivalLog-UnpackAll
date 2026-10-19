@@ -58,12 +58,14 @@ While unpacks from an earlier press are still lined up, another press does nothi
 
 - Survival Log 1.1.18902. Built and tested on this version; a game update can break it until the mod is updated.
 - The [BepInEx Pack for Survival Log](https://www.nexusmods.com/survivallog/mods/12), the BepInEx 6 (IL2CPP) build for the game.
+- [Exiled's Toolkit](https://github.com/AnExiledDev/SurvivalLog-ExiledToolkit) 0.4.0 or newer, which applies changed settings at once. Unpack All does not load without it.
 
 ## Install
 
 1. Install the [BepInEx Pack for Survival Log](https://www.nexusmods.com/survivallog/mods/12) (if no other mods were installed before, start the game once so BepInEx finishes setup, then quit).
-2. Download `UnpackAll-x.y.z.zip` from the [latest release](https://github.com/AnExiledDev/SurvivalLog-UnpackAll/releases/latest) or from Nexus Mods.
-3. Extract the zip into the game folder (the folder with `SurvivalLog.exe`). It holds a `BepInEx` folder, so the DLL lands in the right place. When asked, merge the folders. The result should be:
+2. Install Exiled's Toolkit: download `ExiledToolkit-x.y.z.zip` from [its latest release](https://github.com/AnExiledDev/SurvivalLog-ExiledToolkit/releases/latest) or from Nexus Mods, and extract it into the game folder (the folder with `SurvivalLog.exe`).
+3. Download `UnpackAll-x.y.z.zip` from the [latest release](https://github.com/AnExiledDev/SurvivalLog-UnpackAll/releases/latest) or from Nexus Mods.
+4. Extract the zip into the game folder (the folder with `SurvivalLog.exe`). It holds a `BepInEx` folder, so the DLL lands in the right place. When asked, merge the folders. The result should be:
    `C:\Program Files (x86)\Steam\steamapps\common\Survival Log\BepInEx\plugins\UnpackAll.dll`
 
 ## Uninstall
@@ -72,13 +74,13 @@ Delete `UnpackAll.dll` from the `BepInEx\plugins` folder. For a clean slate, als
 
 ## Configuration
 
-Settings live in `BepInEx\config\com.dev.survivallog.unpackall.cfg`, created the first time the game starts with the mod. Edit it while the game is closed; changes apply at the next game start. Each setting in the cfg file is explained in English and Simplified Chinese. See [CONFIG.md](CONFIG.md) for every setting.
+Settings live in `BepInEx\config\com.dev.survivallog.unpackall.cfg`, created the first time the game starts with the mod. Change them in game on the Mod Manager's Mods screen, where they take effect at once, or edit the file while the game is closed. Each setting in the cfg file is explained in English and Simplified Chinese. See [CONFIG.md](CONFIG.md) for every setting.
 
 ## Troubleshooting
 
 Tested on Survival Log 1.1.18902 with BepInEx `6.0.0-be.788`.
 
-Check `BepInEx\LogOutput.log` for `===== Unpack All 0.3.1 started, key F9, storages off`. The same line, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
+Check `BepInEx\LogOutput.log` for `===== Unpack All 0.4.0 started`, followed by `unpack key F9` and `storages off`. The same lines, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
 
 If Unpack all does not show in the Mods menu, make sure the inventory's item tab is open on the bag side. If a press says it cannot unpack right now, the rest of the message and the log say why. If storage packages are not taken, check that `IncludeStorages` is `true` in the config and that no storage or workbench window is open.
 

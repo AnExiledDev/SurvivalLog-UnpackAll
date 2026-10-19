@@ -14,20 +14,26 @@ internal sealed class UnpackSession
 
     private readonly GamePackages _game;
     private readonly WebPage _page;
-    private readonly KeyCode _unpackKey;
+    private KeyCode _unpackKey = KeyCode.None;
     private readonly Action<string> _log;
     private readonly UnpackWatcher _watcher;
 
     private bool? _shownChinese;
     private float _nextLanguageLook;
 
-    public UnpackSession(GamePackages game, WebPage page, KeyCode unpackKey, Action<string> log)
+    public UnpackSession(GamePackages game, WebPage page, Action<string> log)
     {
         _game = game;
         _page = page;
-        _unpackKey = unpackKey;
         _log = log;
         _watcher = new UnpackWatcher(game, page, log);
+    }
+
+    /// <summary>Takes a new unpack key and names it on the menu row.</summary>
+    public void UseKey(KeyCode unpackKey)
+    {
+        _unpackKey = unpackKey;
+        _page.ShowKey(KeyName());
     }
 
     public void Update()
@@ -86,7 +92,7 @@ internal sealed class UnpackSession
                     _log("page script ready");
                     // A reloaded page has no menu, and one left marked open would hold the game's hotkeys for good.
                     HotkeyGate.MenuClosed();
-                    _page.ShowKey(_unpackKey == KeyCode.None ? "" : _unpackKey.ToString());
+                    _page.ShowKey(KeyName());
                     // A reloaded page shows the English row again, so the next language look renames it.
                     _shownChinese = null;
                     break;
@@ -123,4 +129,6 @@ internal sealed class UnpackSession
             _page.Status(Texts.Failed.Pick(GameLanguage.IsChinese()));
         }
     }
+
+    private string KeyName() => _unpackKey == KeyCode.None ? "" : _unpackKey.ToString();
 }

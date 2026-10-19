@@ -42,7 +42,6 @@ internal sealed class GamePackages : IPackageGame
     };
 
     private readonly Action<string> _log;
-    private readonly bool _includeStorages;
     private readonly HashSet<string> _reportedFailures = new();
 
     /// <summary>Storage package item id to the storage holding it, as of the last read.</summary>
@@ -55,11 +54,13 @@ internal sealed class GamePackages : IPackageGame
 
     private IntPtr _knownConfig;
 
-    public GamePackages(Action<string> log, bool includeStorages)
+    public GamePackages(Action<string> log)
     {
         _log = log;
-        _includeStorages = includeStorages;
     }
+
+    /// <summary>Whether packages in storages at home are unpacked too. Set on the main thread.</summary>
+    public bool IncludeStorages { get; set; }
 
     public PackageRead Read()
     {
@@ -505,7 +506,7 @@ internal sealed class GamePackages : IPackageGame
     /// </summary>
     private StorageAccess ReadStorageAccess()
     {
-        if (!_includeStorages) return StorageAccess.Off;
+        if (!IncludeStorages) return StorageAccess.Off;
 
         try
         {
