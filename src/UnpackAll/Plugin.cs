@@ -1,7 +1,6 @@
 using System.IO;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
-using ExiledToolkit;
 using HarmonyLib;
 using UnityEngine;
 using UnpackAll.Adapters;
@@ -9,7 +8,7 @@ using UnpackAll.Adapters;
 namespace UnpackAll;
 
 [BepInPlugin(Guid, "Unpack All", Version)]
-[BepInDependency(ExiledToolkit.Plugin.Guid, ">=0.4.0")]
+[BepInDependency(OptionalLive.ToolkitGuid, BepInDependency.DependencyFlags.SoftDependency)]
 public sealed class Plugin : BasePlugin
 {
     private const string Guid = "com.dev.survivallog.unpackall";
@@ -17,6 +16,8 @@ public sealed class Plugin : BasePlugin
 
     public override void Load()
     {
+        if (!OptionalLive.IsToolkitInstalled) Log.LogInfo(OptionalLive.MissingNote);
+
         var unpackKey = Config.Bind("Controls", "UnpackKey", KeyCode.F9,
             "Key that unpacks the packages in your bag first, then the ones on the floor at home, up to your free package spots. If IncludeStorages is true, packages in storages at home are unpacked last. None turns the key off, but Unpack all in the inventory's Mods menu still works.\n" +
             "按下此键先拆封背包里的包裹，再拆封家里地上的包裹，数量以空余的包裹位为限。IncludeStorages 设为 true 时，最后还会拆封家里储物家具中的包裹。设为 None 可关闭此键，背包界面 Mods 菜单里的「全部拆封」仍可使用。");
@@ -31,12 +32,12 @@ public sealed class Plugin : BasePlugin
         log.Write($"===== Unpack All {Version} started");
         PageMessages.Apply(harmony, log.Write);
         HotkeyGate.Apply(harmony, log.Write);
-        LiveSettings.Watch(unpackKey, key =>
+        OptionalLive.Watch(unpackKey, key =>
         {
             session.UseKey(key);
             log.Write($"unpack key {key}");
         });
-        LiveSettings.Watch(includeStorages, isOn =>
+        OptionalLive.Watch(includeStorages, isOn =>
         {
             game.IncludeStorages = isOn;
             log.Write($"storages {(isOn ? "on" : "off")}");
