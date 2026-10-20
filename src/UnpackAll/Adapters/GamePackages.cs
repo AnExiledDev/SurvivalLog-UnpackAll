@@ -18,12 +18,6 @@ namespace UnpackAll.Adapters;
 /// </summary>
 internal sealed class GamePackages : IPackageGame
 {
-    private const string NoWorld = "the game world is not loaded";
-    private const string NoHome = "your home is not loaded";
-    private const string ReadFailed = "the game could not be read, see BepInEx/unpack-all.log";
-    private const string CheckFailed = "the game's use check failed, see BepInEx/unpack-all.log";
-    private const string NoReasonGiven = "the game would not allow it";
-
     /// <summary>The panels besides the bag that ContainerTabHotKey.GetOpenPanelType knows, each a window over its own item bin.</summary>
     private static readonly Func<Il2CppSystem.Type>[] OtherPanels =
     {
@@ -72,7 +66,7 @@ internal sealed class GamePackages : IPackageGame
         {
             ReportOnce("read", ex);
 
-            return new PackageRead.NotReady(ReadFailed);
+            return new PackageRead.NotReady(Texts.ReadFailed);
         }
     }
 
@@ -183,24 +177,24 @@ internal sealed class GamePackages : IPackageGame
     }
 
     /// <summary>The game's own check behind the Use button, which answers with the line it would have shown the player.</summary>
-    public string? WhyUnusable(Package package)
+    public Phrase? WhyUnusable(Package package)
     {
         try
         {
             var items = GameSingleton.Existing<BattleLogicWorld>()?._ItemManager;
 
-            if (items == null) return NoWorld;
+            if (items == null) return Texts.NoWorld;
             if (items.VerifyItemUse(package.ItemId, package.ConfigId, out var failMessage)) return null;
 
             _log($"package {package.ItemId} (config {package.ConfigId}) refused by the use check: {failMessage}");
 
-            return string.IsNullOrWhiteSpace(failMessage) ? NoReasonGiven : failMessage;
+            return string.IsNullOrWhiteSpace(failMessage) ? Texts.NoReasonGiven : Phrase.FromGame(failMessage);
         }
         catch (Exception ex)
         {
             ReportOnce("use check", ex);
 
-            return CheckFailed;
+            return Texts.CheckFailed;
         }
     }
 
@@ -351,11 +345,11 @@ internal sealed class GamePackages : IPackageGame
         var actions = world._ActionManager;
         var drops = world._DropItemManager;
 
-        if (items == null || actions == null || drops == null) return new PackageRead.NotReady(NoWorld);
+        if (items == null || actions == null || drops == null) return new PackageRead.NotReady(Texts.NoWorld);
 
         var build = AgentTools.GetAgentComponent<BuildComponent>(role);
 
-        if (build == null) return new PackageRead.NotReady(NoHome);
+        if (build == null) return new PackageRead.NotReady(Texts.NoHome);
 
         var bag = ReadBag(items, config, role.InstanceId);
         var floor = ReadFloor(drops, config);

@@ -62,7 +62,7 @@ public class OutcomeMessageTests
     [Fact]
     public void Presses_that_did_nothing_say_why()
     {
-        Assert.Equal("Can't unpack right now: load a save first.", OutcomeMessage.Describe(new UnpackOutcome.NotReady("load a save first")));
+        Assert.Equal("Can't unpack right now: load a save first.", OutcomeMessage.Describe(new UnpackOutcome.NotReady(Phrase.FromGame("load a save first"))));
         Assert.Equal("No packages in your bag or on the floor at home.", OutcomeMessage.Describe(new UnpackOutcome.NothingToUnpack()));
         Assert.Equal("No packages in your bag, on the floor or in storages at home.", OutcomeMessage.Describe(new UnpackOutcome.NothingToUnpack(HasLookedInStorages: true)));
         Assert.Equal("Could not start unpacking, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(new UnpackOutcome.StartFailed(2, 0)));
@@ -136,7 +136,7 @@ public class OutcomeMessageTests
     [Fact]
     public void A_not_ready_reason_loses_its_rich_text_tags_too()
     {
-        Assert.Equal("Can't unpack right now: your home is not loaded.", OutcomeMessage.Describe(new UnpackOutcome.NotReady("<color=red>your home is not loaded</color>")));
+        Assert.Equal("Can't unpack right now: your home is not loaded.", OutcomeMessage.Describe(new UnpackOutcome.NotReady(Phrase.FromGame("<color=red>your home is not loaded</color>"))));
     }
 
     [Fact]
@@ -182,7 +182,7 @@ public class OutcomeMessageTests
     [Fact]
     public void Chinese_presses_that_did_nothing_say_why_in_chinese()
     {
-        Assert.Equal("现在无法拆封：先读取存档。", OutcomeMessage.Describe(new UnpackOutcome.NotReady("先读取存档。"), isChinese: true));
+        Assert.Equal("现在无法拆封：先读取存档。", OutcomeMessage.Describe(new UnpackOutcome.NotReady(Phrase.FromGame("先读取存档。")), isChinese: true));
         Assert.Equal("正在拆封 2 个包裹，拆完后再按一次。", OutcomeMessage.Describe(new UnpackOutcome.AlreadyUnpacking(2), isChinese: true));
         Assert.Equal("背包和家里地上都没有包裹。", OutcomeMessage.Describe(new UnpackOutcome.NothingToUnpack(), isChinese: true));
         Assert.Equal("背包、家里地上和储物家具中都没有包裹。", OutcomeMessage.Describe(new UnpackOutcome.NothingToUnpack(HasLookedInStorages: true), isChinese: true));
@@ -190,6 +190,18 @@ public class OutcomeMessageTests
         Assert.Equal(
             "无法开始拆封，详见 BepInEx/unpack-all.log。从地上捡起 1 个，并从储物家具取出 2 个，3 个在背包里等待拆封。",
             OutcomeMessage.Describe(new UnpackOutcome.StartFailed(3, 1, 2), isChinese: true));
+    }
+
+    [Fact]
+    public void The_mods_own_reasons_are_given_in_the_players_language()
+    {
+        var notReady = new UnpackOutcome.NotReady(Texts.NoHome);
+        var refused = new UnpackOutcome.Done(new UnpackTally(0, 0, 0, 0, 0, 0, Unusable: 1, UnusableReason: Texts.QueueRefused));
+
+        Assert.Equal("现在无法拆封：你的家尚未加载。", OutcomeMessage.Describe(notReady, isChinese: true));
+        Assert.Equal("Can't unpack right now: your home is not loaded.", OutcomeMessage.Describe(notReady));
+        Assert.Equal("没有拆封任何包裹。1 个现在无法拆封：游戏无法将它加入队列。", OutcomeMessage.Describe(refused, isChinese: true));
+        Assert.Equal("Nothing unpacked. 1 can't be unpacked right now: the game would not line it up.", OutcomeMessage.Describe(refused));
     }
 
     [Fact]
@@ -225,7 +237,7 @@ public class OutcomeMessageTests
                 floorRefused,
                 floorAway,
                 unusable,
-                unusableReason,
+                unusableReason is null ? null : Phrase.FromGame(unusableReason),
                 dropped,
                 fromStorage,
                 storageRefused,

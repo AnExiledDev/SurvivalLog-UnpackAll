@@ -95,7 +95,7 @@ internal sealed class FakeGame : IPackageGame
     public PackageRead Read()
     {
         if (IsNoGame) return new PackageRead.NoGame();
-        if (NotReadyReason is { } reason) return new PackageRead.NotReady(reason);
+        if (NotReadyReason is { } reason) return new PackageRead.NotReady(Phrase.FromGame(reason));
 
         return new PackageRead.Ready(new PackageStock(FreeSpots, LinedUp.Count + Unpacking.Count(), IsHome, Bag.ToList(), Floor.ToList(), WhatStartDoes(), Storages.ToList(), StorageAccess));
     }
@@ -154,7 +154,7 @@ internal sealed class FakeGame : IPackageGame
 
     public IReadOnlyList<Package> BagPackages() => Bag.ToList();
 
-    public string? WhyUnusable(Package package) => Refusals.TryGetValue(package.ItemId, out var reason) ? reason : null;
+    public Phrase? WhyUnusable(Package package) => Refusals.TryGetValue(package.ItemId, out var reason) ? Phrase.FromGame(reason) : null;
 
     /// <summary>Like the game's own queue, this takes any use it is handed, whatever the bag holds.</summary>
     public bool TryQueue(Package package)

@@ -22,7 +22,7 @@ public static class OutcomeMessage
     public static string? Describe(UnpackOutcome outcome, bool isChinese = false) => outcome switch
     {
         UnpackOutcome.NoGame => null,
-        UnpackOutcome.NotReady notReady => isChinese ? $"现在无法拆封：{Reason(notReady.Reason)}。" : $"Can't unpack right now: {Reason(notReady.Reason)}.",
+        UnpackOutcome.NotReady notReady => isChinese ? $"现在无法拆封：{Reason(notReady.Reason, isChinese)}。" : $"Can't unpack right now: {Reason(notReady.Reason, isChinese)}.",
         UnpackOutcome.AlreadyUnpacking busy => isChinese
             ? $"正在拆封 {busy.Queued} 个包裹，拆完后再按一次。"
             : $"Already unpacking {Packages(busy.Queued)}. Press again once {ItOrThey(busy.Queued)} {IsOrAre(busy.Queued)} done.",
@@ -139,9 +139,9 @@ public static class OutcomeMessage
         return waitingInBag > 0 ? $"{brought}, {waitingInBag} waiting in your bag." : $"{brought}.";
     }
 
-    private static string UnusableLine(int count, string? reason, bool isChinese)
+    private static string UnusableLine(int count, Phrase? reason, bool isChinese)
     {
-        var trimmed = reason is null ? "" : Reason(reason);
+        var trimmed = reason is { } given ? Reason(given, isChinese) : "";
 
         if (isChinese) return trimmed.Length == 0 ? $"{count} 个现在无法拆封。" : $"{count} 个现在无法拆封：{trimmed}。";
 
@@ -149,10 +149,10 @@ public static class OutcomeMessage
     }
 
     /// <summary>
-    /// The game's reasons are whole sentences, often in Chinese and sometimes coloured with rich-text tags; the tags
-    /// would print as text, and their own closing mark would double ours.
+    /// The reason in the player's language. The game's reasons are whole sentences, sometimes coloured with rich-text
+    /// tags; the tags would print as text, and their own closing mark would double ours.
     /// </summary>
-    private static string Reason(string reason) => RichTextTag.Replace(reason, "").Trim().TrimEnd(ClosingPunctuation);
+    private static string Reason(Phrase reason, bool isChinese) => RichTextTag.Replace(reason.Pick(isChinese), "").Trim().TrimEnd(ClosingPunctuation);
 
     private static string Packages(int count) => count == 1 ? "1 package" : $"{count} packages";
 

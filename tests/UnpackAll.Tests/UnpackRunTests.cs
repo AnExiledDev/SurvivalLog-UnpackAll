@@ -98,7 +98,7 @@ public class UnpackRunTests
 
         Assert.Equal(new long[] { 2 }, game.Unpacking);
         Assert.Equal(1, tally.Unusable);
-        Assert.Equal("Not now.", tally.UnusableReason);
+        Assert.Equal(Phrase.FromGame("Not now."), tally.UnusableReason);
         Assert.Equal(0, tally.NoSpot);
     }
 
@@ -235,7 +235,7 @@ public class UnpackRunTests
 
         Assert.Equal(new[] { Walking }, game.Running);
         Assert.Equal(2, tally.Unusable);
-        Assert.Equal(UnpackRun.QueueRefusedReason, tally.UnusableReason);
+        Assert.Equal(Texts.QueueRefused, tally.UnusableReason);
     }
 
     [Fact]
@@ -287,7 +287,7 @@ public class UnpackRunTests
     {
         var game = new FakeGame { NotReadyReason = "your home is not loaded", FreeSpots = 2, Bag = { Pkg(1) } };
 
-        Assert.Equal(new UnpackOutcome.NotReady("your home is not loaded"), UnpackRun.Run(game));
+        Assert.Equal(new UnpackOutcome.NotReady(Phrase.FromGame("your home is not loaded")), UnpackRun.Run(game));
         Assert.Equal(new[] { Walking }, game.Running);
         Assert.Empty(game.LinedUp);
     }
@@ -570,7 +570,7 @@ public class UnpackRunTests
         Assert.Equal(new[] { Pkg(20) }, game.Storages);
         Assert.Equal(new long[] { 21 }, game.Unpacking);
         Assert.Equal(1, tally.Unusable);
-        Assert.Equal("Not now.", tally.UnusableReason);
+        Assert.Equal(Phrase.FromGame("Not now."), tally.UnusableReason);
     }
 
     [Fact]

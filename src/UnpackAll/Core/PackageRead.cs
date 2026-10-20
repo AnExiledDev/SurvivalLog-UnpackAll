@@ -11,7 +11,7 @@ public abstract record PackageRead
 
     public sealed record Ready(PackageStock Stock) : PackageRead;
 
-    public sealed record NotReady(string Reason) : PackageRead;
+    public sealed record NotReady(Phrase Reason) : PackageRead;
 
     /// <summary>There is no game to unpack in: the title screen, a save still loading, or the prologue.</summary>
     public sealed record NoGame : PackageRead;

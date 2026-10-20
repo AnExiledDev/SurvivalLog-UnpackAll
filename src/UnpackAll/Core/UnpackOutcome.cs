@@ -10,7 +10,7 @@ public abstract record UnpackOutcome
     /// <summary>No game to unpack in (title screen, loading, prologue); the press is ignored.</summary>
     public sealed record NoGame : UnpackOutcome;
 
-    public sealed record NotReady(string Reason) : UnpackOutcome;
+    public sealed record NotReady(Phrase Reason) : UnpackOutcome;
 
     /// <summary>Unpacks from an earlier press (or a hand-used package) are still lined up, so nothing was touched.</summary>
     public sealed record AlreadyUnpacking(int Queued) : UnpackOutcome;
@@ -50,7 +50,7 @@ public sealed record UnpackTally(
     int FloorRefused,
     int FloorAway,
     int Unusable,
-    string? UnusableReason,
+    Phrase? UnusableReason,
     int Dropped = 0,
     int FromStorage = 0,
     int StorageRefused = 0,

@@ -13,7 +13,6 @@ namespace UnpackAll.Core;
 /// </summary>
 public static class UnpackRun
 {
-    public const string QueueRefusedReason = "the game would not line it up";
 
     public static UnpackOutcome Run(IPackageGame game)
     {
@@ -100,7 +99,7 @@ public static class UnpackRun
         private int _storageUnchecked;
         private int _storageTooBig;
         private int _unusable;
-        private string? _unusableReason;
+        private Phrase? _unusableReason;
 
         public Press(IPackageGame game, int freeSpots)
         {
@@ -216,7 +215,7 @@ public static class UnpackRun
                 {
                     if (!_game.TryQueue(package))
                     {
-                        CountUnusable(package.Count - unit, QueueRefusedReason);
+                        CountUnusable(package.Count - unit, Texts.QueueRefused);
 
                         break;
                     }
@@ -344,7 +343,7 @@ public static class UnpackRun
             _storageClaimed += units;
         }
 
-        private void CountUnusable(int units, string reason)
+        private void CountUnusable(int units, Phrase reason)
         {
             _unusable += units;
             _unusableReason ??= reason;

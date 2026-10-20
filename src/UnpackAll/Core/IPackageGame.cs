@@ -23,7 +23,7 @@ public interface IPackageGame
     IReadOnlyList<Package> BagPackages();
 
     /// <summary>The game's reason for refusing to use this package right now, or null when it would allow it.</summary>
-    string? WhyUnusable(Package package);
+    Phrase? WhyUnusable(Package package);
 
     /// <summary>Lines up one unpack of one package from the stack for the character. False when the game would not take it.</summary>
     bool TryQueue(Package package);
