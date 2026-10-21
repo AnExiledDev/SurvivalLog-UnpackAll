@@ -29,7 +29,7 @@ internal static class PageMessages
         }
         catch (Exception ex)
         {
-            log("could not listen for inventory button messages, the button will do nothing (the hotkey still works): " + ex.Message);
+            log("could not hook inventory button messages, the button will do nothing (the hotkey still works): " + ex.Message);
         }
     }
 
