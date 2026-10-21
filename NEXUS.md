@@ -1,5 +1,5 @@
 Name: Unpack All
-Summary: One press unpacks every furniture package in your bag, then the ones on the floor at home (and in your storages, if you turn that on), as far as your home has free package spots. F9 or the inventory's Mods menu. 一键拆封背包里的所有家具包裹，再拆封家里地上的包裹（开启后还包括储物家具中的包裹），数量以家里空余的包裹位为限。按 F9 或使用背包界面的 Mods 菜单。
+Summary: Unpack every furniture package in your bag and on the floor at home with one key (F9), and never more than your home has free spots for, so the queue doesn't fill up with unpacks that fail. It can also pull packages out of your storages if you turn that on. Uses the game's own Use action and waits behind the orders you already queued.
 
 Description (BBCode):
 Unpacking furniture packages one at a time is slow, and lining up too many fills the queue with unpacks that fail. Unpack All unpacks everything in your bag and on the floor at home in one press, and never lines up more than your home has room for. It can also take packages out of your storages at home if you turn that on in the config.
@@ -36,7 +36,7 @@ The mod adds no data of its own to your save, but the unpacks are real: packages
 
 [size=5]Requirements[/size]
 [list]
-[*]Survival Log 1.1.18902. A game update can break it until the mod is updated.[/*]
+[*]Survival Log 1.1.19131. A game update can break it until the mod is updated.[/*]
 [*][url=https://www.nexusmods.com/survivallog/mods/12]BepInEx for Survival Log[/url]. Install it first.[/*]
 [*]Optional: [url=https://github.com/AnExiledDev/SurvivalLog-ExiledToolkit]Exiled's Toolkit[/url] 0.4.0 or newer. With it, settings changed on the Mod Manager's Mods screen take effect without restarting the game. Without it, they take effect at the next game start.[/*]
 [/list]
@@ -101,7 +101,7 @@ F9 可以在配置中修改或关闭。无论如何，Mods 菜单里的「全部
 
 [size=5]前置要求[/size]
 [list]
-[*]Survival Log 1.1.18902。游戏更新后模组可能暂时失效，直到模组更新为止。[/*]
+[*]Survival Log 1.1.19131。游戏更新后模组可能暂时失效，直到模组更新为止。[/*]
 [*][url=https://www.nexusmods.com/survivallog/mods/12]BepInEx for Survival Log[/url]，请先安装。[/*]
 [*]可选：[url=https://github.com/AnExiledDev/SurvivalLog-ExiledToolkit]Exiled's Toolkit[/url] 0.4.0 或更新版本。装了它，在 Mod Manager 的「模组」界面改动的设置无需重启游戏即可生效；没装的话，改动在下次启动游戏时生效。[/*]
 [/list]
