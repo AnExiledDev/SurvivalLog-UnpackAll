@@ -56,7 +56,7 @@ While unpacks from an earlier press are still lined up, another press does nothi
 
 ## Requirements
 
-- Survival Log 1.1.19131. Built and tested on this version; a game update can break it until the mod is updated.
+- Survival Log 1.1.19611. Built and tested on this version; a game update can break it until the mod is updated.
 - The [BepInEx Pack for Survival Log](https://www.nexusmods.com/survivallog/mods/12), the BepInEx 6 (IL2CPP) build for the game.
 - Optional: [Exiled's Toolkit](https://github.com/AnExiledDev/SurvivalLog-ExiledToolkit) 0.4.0 or newer. With it, settings changed on the Mod Manager's Mods screen take effect without restarting the game. Without it, they take effect at the next game start.
 
@@ -78,7 +78,7 @@ Settings live in `BepInEx\config\com.dev.survivallog.unpackall.cfg`, created the
 
 ## Troubleshooting
 
-Tested on Survival Log 1.1.19131 with BepInEx `6.0.0-be.788`.
+Tested on Survival Log 1.1.19611 with BepInEx `6.0.0-be.788`.
 
 Check `BepInEx\LogOutput.log` for `===== Unpack All 0.4.1 started`, followed by `unpack key F9` and `storages off`. The same lines, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
 
