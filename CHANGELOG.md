@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0
+
+- Unpack all is now also in the Mods button on the workbench, stove, ration press, greenhouse, drone hub, brewing barrel, dye vat, rat cage, material rack and shop screens. While one of those screens is open it unpacks only what is in your bag; the floor and storages wait until it is closed, as before.
+- Made for Survival Log 1.1.19611.
+
 ## 0.4.1
 
 - After a game update, a hook that can no longer be placed is logged as an error, so the Mod Manager can mark the mod as maybe needing an update.

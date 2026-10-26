@@ -11,7 +11,7 @@ Unpacking furniture packages one at a time is slow, and lining up too many fills
 [*][b]Game's own Use action[/b]: the same action as the inventory's Use button, with the game's checks and timings.[/*]
 [*][b]Your queued actions stay[/b]: unpacks join the end of the queue, so your own actions run first.[/*]
 [*][b]Clear messages[/b]: says how many are unpacking, how many were picked up or taken from storages, and why any were left.[/*]
-[*][b]Mods menu[/b]: a Mods button on the inventory toolbar with an Unpack all entry, shared with other mods that use it.[/*]
+[*][b]Mods menu[/b]: a Mods button on the inventory toolbar, and in the bag panel of most station screens, with an Unpack all entry, shared with other mods that use it.[/*]
 [/list]
 
 [size=5]Hotkeys[/size]
@@ -78,7 +78,7 @@ Open source under MIT: [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll
 [*][b]游戏自己的使用动作[/b]：和背包界面「使用」按钮相同的动作，遵循游戏自己的检查和时间。[/*]
 [*][b]保留你排好的行动[/b]：拆封加在队列末尾，你自己排的行动先执行。[/*]
 [*][b]清楚的提示[/b]：告诉你正在拆封多少个、从地上捡起或从储物家具取出多少个，以及剩下的为什么没拆。[/*]
-[*][b]Mods 菜单[/b]：背包工具栏上的 Mods 按钮，里面有「全部拆封」一项，和其他使用同一菜单的模组共用。[/*]
+[*][b]Mods 菜单[/b]：背包工具栏上，以及大部分设施界面背包栏里的 Mods 按钮，里面有「全部拆封」一项，和其他使用同一菜单的模组共用。[/*]
 [/list]
 
 [size=5]快捷键[/size]

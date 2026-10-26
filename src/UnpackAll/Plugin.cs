@@ -12,7 +12,7 @@ namespace UnpackAll;
 public sealed class Plugin : BasePlugin
 {
     private const string Guid = "com.dev.survivallog.unpackall";
-    private const string Version = "0.4.1";
+    private const string Version = "0.5.0";
 
     public override void Load()
     {

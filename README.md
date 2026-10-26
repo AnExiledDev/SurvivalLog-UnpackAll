@@ -29,7 +29,7 @@ Unpack All adds no data of its own to your save. The unpacks are real: packages 
 
 The mod adds a **Mods** button (a four-square icon) to the toolbar on the bag side of the inventory screen, between the game's discard and sort buttons. Click it to open a small menu with **Unpack all**, which shows the unpack key next to it and does the same as the key. Esc or a click anywhere else closes the menu, and the game's own hotkeys are held back while it is open so Esc closes only the menu.
 
-The Unpack all entry only shows on the bag's item tab, and not in the prologue. Other mods that use the same Mods menu list their own entries in it, so you get one button instead of one per mod; when no mod has an entry to show, the button is taken away.
+On the inventory the Unpack all entry only shows on the bag's item tab, and not in the prologue. The same Mods button is also in the bag panel of the workbench, stove, ration press, greenhouse, drone hub, brewing barrel, dye vat, rat cage, material rack and shop screens (not the shredder or the drone trade); there it unpacks only what is in your bag, since the floor and storages are left alone while a station screen is open. Other mods that use the same Mods menu list their own entries in it, so you get one button instead of one per mod; when no mod has an entry to show, the button is taken away.
 
 The Unpack all entry, its tooltip and the messages follow the game's language, English or Simplified Chinese, and switch within a second when you change it. The shared Mods button and its tooltip stay in English. The game's own refusal reasons are shown as the game words them.
 
