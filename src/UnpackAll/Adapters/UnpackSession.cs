@@ -10,7 +10,7 @@ namespace UnpackAll.Adapters;
 /// </summary>
 internal sealed class UnpackSession
 {
-    private const float LanguageLookSeconds = 1f;
+    private const double LanguageLookSeconds = 1;
 
     private readonly GamePackages _game;
     private readonly WebPage _page;
@@ -19,14 +19,15 @@ internal sealed class UnpackSession
     private readonly UnpackWatcher _watcher;
 
     private bool? _shownChinese;
-    private float _nextLanguageLook;
+    private double _nextLanguageLook;
 
-    public UnpackSession(GamePackages game, WebPage page, Action<string> log)
+    /// <param name="detail">Logs a line to the mod's own file only.</param>
+    public UnpackSession(GamePackages game, WebPage page, Action<string> log, Action<string> detail)
     {
         _game = game;
         _page = page;
         _log = log;
-        _watcher = new UnpackWatcher(game, page, log);
+        _watcher = new UnpackWatcher(game, page, log, detail);
     }
 
     /// <summary>Takes a new unpack key and names it on the menu row.</summary>
@@ -38,9 +39,11 @@ internal sealed class UnpackSession
 
     public void Update()
     {
-        _page.KeepInstalled(Time.unscaledTime);
-        _watcher.Tick(Time.unscaledTime);
-        KeepLanguage(Time.unscaledTime);
+        var now = Clock.Now;
+
+        _page.KeepInstalled(now);
+        _watcher.Tick(now);
+        KeepLanguage(now);
 
         var isPressed = TakePageCommands();
 
@@ -49,9 +52,14 @@ internal sealed class UnpackSession
         if (isPressed) UnpackAll();
     }
 
-    /// <summary>The player can switch the game's language at any time, so it is read once a second and the menu row follows.</summary>
-    private void KeepLanguage(float now)
+    /// <summary>
+    /// The player can switch the game's language at any time, so it is read once a second and the menu row follows.
+    /// The first look waits half a second, so it and the page check (every two seconds from the first frame) never
+    /// land on the same frame.
+    /// </summary>
+    private void KeepLanguage(double now)
     {
+        if (_nextLanguageLook == 0) _nextLanguageLook = now + (LanguageLookSeconds / 2);
         if (now < _nextLanguageLook) return;
 
         _nextLanguageLook = now + LanguageLookSeconds;
@@ -98,7 +106,7 @@ internal sealed class UnpackSession
                     break;
                 case PageCommand.NoScript:
                     HotkeyGate.MenuClosed();
-                    _page.Install();
+                    _page.Install(Clock.Now);
                     break;
                 case PageCommand.Unknown unknown:
                     _log("page said: " + unknown.Text);
@@ -120,13 +128,13 @@ internal sealed class UnpackSession
 
             _log($"press: {outcome} -> {message ?? "(no message)"}");
 
-            if (message != null) _page.Status(message);
-            if (outcome is UnpackOutcome.Done done) _watcher.Begin(done.Tally.Queued, Time.unscaledTime);
+            if (message != null) _page.Status(message, Clock.Now);
+            if (outcome is UnpackOutcome.Done done) _watcher.Begin(done.Tally.Queued, Clock.Now);
         }
         catch (Exception ex)
         {
             _log("press failed: " + ex);
-            _page.Status(Texts.Failed.Pick(GameLanguage.IsChinese()));
+            _page.Status(Texts.Failed.Pick(GameLanguage.IsChinese()), Clock.Now);
         }
     }
 

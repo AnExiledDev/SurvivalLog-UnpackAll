@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1
+
+- Unpacking many packages at once no longer makes the game stutter, and neither does the first press after starting the game.
+- Less work in the background while you play.
+- Made for Survival Log 1.1.19611.
+
 ## 0.5.0
 
 - Unpack all is now also in the Mods button on the workbench, stove, ration press, greenhouse, drone hub, brewing barrel, dye vat, rat cage, material rack and shop screens.

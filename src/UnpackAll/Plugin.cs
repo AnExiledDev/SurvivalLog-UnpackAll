@@ -1,9 +1,12 @@
+using System;
 using System.IO;
+using System.Threading;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using UnityEngine;
 using UnpackAll.Adapters;
+using UnpackAll.Core;
 
 namespace UnpackAll;
 
@@ -12,7 +15,7 @@ namespace UnpackAll;
 public sealed class Plugin : BasePlugin
 {
     private const string Guid = "com.dev.survivallog.unpackall";
-    private const string Version = "0.5.0";
+    private const string Version = "0.5.1";
 
     public override void Load()
     {
@@ -26,8 +29,8 @@ public sealed class Plugin : BasePlugin
             "设为 true 时，拆完背包和家里地上的包裹后，还会拆封家里储物家具中的包裹。储物家具里的一组包裹只有能全部放进空余的包裹位时，才会整组移进背包；开着储物、工作台、商店或交易界面时不会取出任何东西。设为 false（默认）则不动储物家具。");
         var log = new UnpackLog(Log, Path.Combine(Paths.BepInExRootPath, "unpack-all.log"));
         var harmony = new Harmony(Guid);
-        var game = new GamePackages(log.Write);
-        var session = new UnpackSession(game, new WebPage(log.Write), log.Write);
+        var game = new GamePackages(log.Write, log.Detail);
+        var session = new UnpackSession(game, new WebPage(log.Write), log.Write, log.Detail);
 
         log.Write($"===== Unpack All {Version} started");
         PageMessages.Apply(harmony, log.Write);
@@ -44,6 +47,27 @@ public sealed class Plugin : BasePlugin
         });
         UnpackTicker.Session = session;
         UnpackTicker.Log = log.Write;
+        UnpackTicker.Quit = log.Finish;
         AddComponent<UnpackTicker>();
+        StartWarmUp();
+    }
+
+    /// <summary>
+    /// Compiles the press path on a worker, so the first press does not pay for it on the game's frame. The warm-up is
+    /// pure .NET and touches nothing of the game; a failure only means the first press compiles as before.
+    /// </summary>
+    private static void StartWarmUp()
+    {
+        new Thread(() =>
+        {
+            try
+            {
+                WarmUp.Run();
+            }
+            catch (Exception)
+            {
+                // Nothing to report: the press itself still works, it only compiles on first use.
+            }
+        }) { IsBackground = true, Name = "UnpackAll warm-up" }.Start();
     }
 }

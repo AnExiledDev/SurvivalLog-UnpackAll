@@ -7,29 +7,33 @@ namespace UnpackAll.Adapters;
 /// <summary>
 /// Follows the unpacks a press started, looking twice a second, and logs each change in what the character holds:
 /// how many of them are still queued and how many packages have left the bag. When none is left it logs the verdict,
-/// and shows a line on the page when an unpack ended without opening its package.
+/// and shows a line on the page when an unpack ended without opening its package. A look that finds nothing changed
+/// builds no log line.
 /// </summary>
 internal sealed class UnpackWatcher
 {
-    private const float LookEverySeconds = 0.5f;
+    private const double LookEverySeconds = 0.5;
 
     private readonly GamePackages _game;
     private readonly WebPage _page;
     private readonly Action<string> _log;
+    private readonly Action<string> _detail;
 
     private UnpackWatch? _watch;
     private int[] _configIds = Array.Empty<int>();
-    private float _nextLook;
+    private double _nextLook;
 
-    public UnpackWatcher(GamePackages game, WebPage page, Action<string> log)
+    /// <param name="detail">Logs a line to the mod's own file only, for the watch's steps.</param>
+    public UnpackWatcher(GamePackages game, WebPage page, Action<string> log, Action<string> detail)
     {
         _game = game;
         _page = page;
         _log = log;
+        _detail = detail;
     }
 
     /// <summary>Starts watching the unpacks a press just started, the ones seen in the queue right after the start.</summary>
-    public void Begin(int started, float now)
+    public void Begin(int started, double now)
     {
         if (_watch is { IsFinished: false }) _log("watch: a new press replaced the watch over the last one");
 
@@ -48,10 +52,10 @@ internal sealed class UnpackWatcher
         _watch = new UnpackWatch(started, first.BagUnits);
         _nextLook = now + LookEverySeconds;
 
-        _log($"watch: following {started} unpack(s) of config {string.Join(",", _configIds)}, {first.BagUnits} in the bag, {first.Pending} with the character; {first.Queue}");
+        _log($"watch: following {started} unpack(s) of config {string.Join(",", _configIds)}, {first.BagUnits} in the bag, {first.Pending} with the character; {_game.QueueLine()}");
     }
 
-    public void Tick(float now)
+    public void Tick(double now)
     {
         if (_watch == null || now < _nextLook) return;
 
@@ -65,19 +69,19 @@ internal sealed class UnpackWatcher
             return;
         }
 
-        Report(_watch.Observe(look.Pending, look.BagUnits, now), look);
+        Report(_watch.Observe(look.Pending, look.BagUnits, now));
 
         if (_watch.IsFinished) _watch = null;
     }
 
-    private void Report(WatchStep step, StartedLook look)
+    private void Report(WatchStep step)
     {
         switch (step)
         {
             case WatchStep.Quiet:
                 break;
             case WatchStep.Changed changed:
-                _log($"watch: {changed.Pending} with the character, {changed.Consumed} package(s) used so far; {look.Queue}");
+                _detail($"watch: {changed.Pending} with the character, {changed.Consumed} package(s) used so far; {_game.QueueLine()}");
                 break;
             case WatchStep.Finished finished:
                 Finish(finished);
@@ -93,6 +97,6 @@ internal sealed class UnpackWatcher
 
         _log($"watch: done, {finished.Consumed} of {finished.Started} started unpack(s) used their package -> {message ?? "(no message)"}");
 
-        if (message != null) _page.Status(message);
+        if (message != null) _page.Status(message, Clock.Now);
     }
 }

@@ -13,6 +13,9 @@ public sealed class UnpackWatch
     /// <summary>How long the queue must stay empty before the verdict, so a package used up a moment after its unpack left the queue still counts.</summary>
     public const double SettleSeconds = 2;
 
+    /// <summary>Made once: most looks find nothing changed, and the watcher looks twice a second.</summary>
+    private static readonly WatchStep Quiet = new WatchStep.Quiet();
+
     private readonly int _started;
     private readonly int _bagUnitsBefore;
     private int _lastPending;
@@ -35,7 +38,7 @@ public sealed class UnpackWatch
     /// <param name="now">Seconds on any clock that only moves forward.</param>
     public WatchStep Observe(int pending, int bagUnits, double now)
     {
-        if (IsFinished) return new WatchStep.Quiet();
+        if (IsFinished) return Quiet;
 
         var consumed = Math.Clamp(_bagUnitsBefore - bagUnits, 0, _started);
         var isChanged = pending != _lastPending || consumed != _lastConsumed;
@@ -52,7 +55,7 @@ public sealed class UnpackWatch
             return new WatchStep.Finished(_started, consumed);
         }
 
-        return isChanged ? new WatchStep.Changed(pending, consumed) : new WatchStep.Quiet();
+        return isChanged ? new WatchStep.Changed(pending, consumed) : Quiet;
     }
 }
 

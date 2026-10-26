@@ -6,20 +6,21 @@ using UnpackAll.Core;
 namespace UnpackAll.Adapters;
 
 /// <summary>
-/// Writes to the BepInEx log and to an append-only file that survives restarts
-/// (LogOutput.log is overwritten on the next launch).
+/// Writes to the BepInEx log and to an append-only file that survives restarts (LogOutput.log is overwritten on the
+/// next launch). The file is written on a worker. Lines about single packages and the watch's steps go to the file
+/// only, so a press with many packages does not write each of them to the console too.
 /// </summary>
 internal sealed class UnpackLog
 {
+    private static readonly TimeSpan QuitWait = TimeSpan.FromSeconds(3);
+
     private readonly ManualLogSource _bepinex;
-    private readonly string _path;
-    private readonly object _gate = new();
-    private StreamWriter? _file;
+    private readonly LineWriter _file;
 
     public UnpackLog(ManualLogSource bepinex, string path)
     {
         _bepinex = bepinex;
-        _path = path;
+        _file = new LineWriter(() => OpenFile(path));
     }
 
     /// <summary>Never throws: a logger that can fail would take down whatever it was asked to report on.</summary>
@@ -35,39 +36,16 @@ internal sealed class UnpackLog
             // The file copy below still has a chance.
         }
 
-        lock (_gate) AppendToFile($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}");
+        Detail(message);
     }
 
-    /// <summary>One writer stays open so a busy frame is not paying for an open and close per line.</summary>
-    private void AppendToFile(string line)
-    {
-        try
-        {
-            _file ??= OpenFile();
-            _file.WriteLine(line);
-        }
-        catch (Exception)
-        {
-            // The BepInEx log already has the line; the writer is dropped so the next line tries a fresh one.
-            CloseFile();
-        }
-    }
+    /// <summary>A line for the mod's own file only.</summary>
+    public void Detail(string message) => _file.Add(DateTime.UtcNow, message);
 
-    /// <summary>Shared for reading so the log can be tailed while the game runs; flushed per line so a crash loses nothing.</summary>
-    private StreamWriter OpenFile() =>
-        new(new FileStream(_path, FileMode.Append, FileAccess.Write, FileShare.ReadWrite)) { AutoFlush = true };
+    /// <summary>On quit, gives the worker a few seconds to write what is still queued.</summary>
+    public void Finish() => _file.WaitIdle(QuitWait);
 
-    private void CloseFile()
-    {
-        try
-        {
-            _file?.Dispose();
-        }
-        catch (Exception)
-        {
-            // A writer that failed to write can fail to close too; it is being thrown away either way.
-        }
-
-        _file = null;
-    }
+    /// <summary>Shared for reading so the log can be tailed while the game runs.</summary>
+    private static TextWriter OpenFile(string path) =>
+        new StreamWriter(new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.ReadWrite));
 }

@@ -18,24 +18,17 @@ namespace UnpackAll.Adapters;
 /// </summary>
 internal sealed class GamePackages : IPackageGame
 {
-    /// <summary>The panels besides the bag that ContainerTabHotKey.GetOpenPanelType knows, each a window over its own item bin.</summary>
-    private static readonly Func<Il2CppSystem.Type>[] OtherPanels =
-    {
-        () => Il2CppType.Of<WebUI_Brew>(),
-        () => Il2CppType.Of<WebUI_Compressor>(),
-        () => Il2CppType.Of<WebUI_Cooking>(),
-        () => Il2CppType.Of<WebUI_DroneHub>(),
-        () => Il2CppType.Of<WebUI_Dye>(),
-        () => Il2CppType.Of<WebUI_GreenhouseBuild>(),
-        () => Il2CppType.Of<WebUI_MaterialRack>(),
-        () => Il2CppType.Of<WebUI_RatCage>(),
-        () => Il2CppType.Of<WebUI_ShopUI>(),
-        () => Il2CppType.Of<WebUI_Shredder>(),
-        () => Il2CppType.Of<WebUI_ToolTable>(),
-        () => Il2CppType.Of<WebUI_TradeUI>(),
-    };
+    /// <summary>
+    /// The panels besides the bag that ContainerTabHotKey.GetOpenPanelType knows, each a window over its own item bin.
+    /// Looked up on the first press that checks windows, on the main thread, then kept.
+    /// </summary>
+    private static Il2CppSystem.Type[]? _otherPanels;
+
+    private static Il2CppSystem.Type? _bagPanel;
+    private static Il2CppSystem.Type? _bagScreenState;
 
     private readonly Action<string> _log;
+    private readonly Action<string> _detail;
     private readonly HashSet<string> _reportedFailures = new();
 
     /// <summary>Storage package item id to the storage holding it, as of the last read.</summary>
@@ -48,9 +41,17 @@ internal sealed class GamePackages : IPackageGame
 
     private IntPtr _knownConfig;
 
-    public GamePackages(Action<string> log)
+    /// <summary>The package point found for this press: the character does not move while a press lines up its unpacks.</summary>
+    private Vector3? _pressPoint;
+
+    private bool _hasPressPoint;
+
+    /// <param name="log">Logs a line to the BepInEx log and the mod's own file.</param>
+    /// <param name="detail">Logs a line to the mod's own file only, for the lines a press writes per package.</param>
+    public GamePackages(Action<string> log, Action<string> detail)
     {
         _log = log;
+        _detail = detail;
     }
 
     /// <summary>Whether packages in storages at home are unpacked too. Set on the main thread.</summary>
@@ -88,7 +89,7 @@ internal sealed class GamePackages : IPackageGame
             // The floor is the truth: the game's own answer is only logged when it disagrees, since its meaning is not documented.
             if (taken != picked || (!isAccepted && taken != 0)) _log($"PICKUP MISMATCH floor package {floorPackage.ItemId}: taken {taken}, picked {picked}, accepted {isAccepted}");
 
-            _log($"picked up floor package {floorPackage.ItemId} (config {floorPackage.ConfigId}): {taken} of {floorPackage.Count}");
+            _detail($"picked up floor package {floorPackage.ItemId} (config {floorPackage.ConfigId}): {taken} of {floorPackage.Count}");
 
             return taken;
         }
@@ -127,7 +128,7 @@ internal sealed class GamePackages : IPackageGame
             var taken = Math.Max(0, held - remaining);
 
             // The game answers false after part of a stack already went onto bag stacks, so its answer is only logged.
-            _log($"took storage package {storagePackage.ItemId} (config {storagePackage.ConfigId}) from storage {storageId}: {taken} of {held}, accepted {isMoved?.ToString() ?? "threw"}");
+            _detail($"took storage package {storagePackage.ItemId} (config {storagePackage.ConfigId}) from storage {storageId}: {taken} of {held}, accepted {isMoved?.ToString() ?? "threw"}");
 
             return taken;
         }
@@ -186,7 +187,7 @@ internal sealed class GamePackages : IPackageGame
             if (items == null) return Texts.NoWorld;
             if (items.VerifyItemUse(package.ItemId, package.ConfigId, out var failMessage)) return null;
 
-            _log($"package {package.ItemId} (config {package.ConfigId}) refused by the use check: {failMessage}");
+            _detail($"package {package.ItemId} (config {package.ConfigId}) refused by the use check: {failMessage}");
 
             return string.IsNullOrWhiteSpace(failMessage) ? Texts.NoReasonGiven : Phrase.FromGame(failMessage);
         }
@@ -214,7 +215,7 @@ internal sealed class GamePackages : IPackageGame
 
             if (role == null || config == null || UnpackAction(config, package.ConfigId) is not { } actionId) return false;
 
-            if (NearestPackagePoint(config, role) is not { } point)
+            if (PressPoint(config, role) is not { } point)
             {
                 LogOnce("no package point", "the game has no package point to send an unpack to, so nothing is lined up (reported once)");
 
@@ -224,7 +225,7 @@ internal sealed class GamePackages : IPackageGame
             role.AddLeadingRoleAction(actionId, package.ItemId, point, Quaternion.identity);
             _linedUpConfigs.Add(package.ConfigId);
 
-            _log($"lined up package {package.ItemId} (config {package.ConfigId}, action {actionId}) to unpack at package point {point}");
+            _detail($"lined up package {package.ItemId} (config {package.ConfigId}, action {actionId}) to unpack at package point {point}");
 
             return true;
         }
@@ -295,31 +296,74 @@ internal sealed class GamePackages : IPackageGame
     public IReadOnlyCollection<int> LinedUpConfigs => _linedUpConfigs;
 
     /// <summary>
-    /// One look for the watch over started unpacks: the uses of these kinds still with the character, the units of
-    /// them in the bag, and a line on what the queue holds. Null when the game cannot be read.
+    /// One look for the watch over started unpacks: the uses of these kinds still with the character and the units of
+    /// them in the bag. Null when the game cannot be read. The watch looks twice a second, so this builds no list and
+    /// no log line; the kinds are package kinds already, so the bag is counted without asking which items unpack.
     /// </summary>
-    public StartedLook? LookAtStarted(IReadOnlyCollection<int> configIds)
+    public StartedLook? LookAtStarted(int[] configIds)
     {
         try
         {
             var world = GameSingleton.Existing<BattleLogicWorld>();
-            var config = GameSingleton.Existing<ConfigManager>();
             var role = world?._AgentManager?.GetLeadingRole();
             var actions = world?._ActionManager;
             var items = world?._ItemManager;
 
-            if (role == null || config == null || actions == null || items == null) return null;
+            if (role == null || actions == null || items == null) return null;
 
-            var pending = configIds.Sum(configId => actions.CountPendingItemUses(role.InstanceId, configId));
-            var bagUnits = ReadBag(items, config, role.InstanceId).Where(package => configIds.Contains(package.ConfigId)).Sum(package => package.Count);
+            var roleId = role.InstanceId;
+            var pending = 0;
 
-            return new StartedLook(pending, bagUnits, DescribeQueue(actions, role.InstanceId));
+            for (var i = 0; i < configIds.Length; i++) pending += actions.CountPendingItemUses(roleId, configIds[i]);
+
+            return new StartedLook(pending, BagUnits(items, roleId, configIds));
         }
         catch (Exception ex)
         {
             ReportOnce("watch", ex);
 
             return null;
+        }
+    }
+
+    /// <summary>The units of these kinds in the bag, counted the way ReadBag lists packages.</summary>
+    private static int BagUnits(ItemManager items, long bagId, int[] configIds)
+    {
+        var held = items.GetItemDataList(bagId);
+        var units = 0;
+
+        for (var i = 0; held != null && i < held.Count; i++)
+        {
+            var item = held[i];
+
+            if (item == null) continue;
+
+            var count = item.ItemCount;
+
+            if (count <= 0 || item.OwnerId != bagId || Array.IndexOf(configIds, item.ItemConfigId) < 0) continue;
+
+            units += count;
+        }
+
+        return units;
+    }
+
+    /// <summary>What the character's queue holds, as a log line, read only when a line is written.</summary>
+    public string QueueLine()
+    {
+        try
+        {
+            var world = GameSingleton.Existing<BattleLogicWorld>();
+            var role = world?._AgentManager?.GetLeadingRole();
+            var actions = world?._ActionManager;
+
+            return role == null || actions == null ? "queue: unreadable" : DescribeQueue(actions, role.InstanceId);
+        }
+        catch (Exception ex)
+        {
+            ReportOnce("queue description", ex);
+
+            return "queue: unreadable";
         }
     }
 
@@ -338,6 +382,8 @@ internal sealed class GamePackages : IPackageGame
 
         _linedUpConfigs.Clear();
         _storageOwners.Clear();
+        _hasPressPoint = false;
+        _pressPoint = null;
 
         if (world == null || config == null || agents == null || role == null || !IsAfterDisaster(world)) return new PackageRead.NoGame();
 
@@ -441,7 +487,7 @@ internal sealed class GamePackages : IPackageGame
         if (IsSameDrop(drops.FindDropItem(drop.InstanceId), drop)) return drop.InstanceId;
         if (IsSameDrop(drops.FindDropItem(drop.Item.InstanceId), drop)) return drop.Item.InstanceId;
 
-        LogOnce("floor id", $"floor package {drop.InstanceId} (item {drop.Item.InstanceId}) is not found by either id; such packages are skipped (reported once)");
+        if (_reportedFailures.Add("floor id")) _log($"floor package {drop.InstanceId} (item {drop.Item.InstanceId}) is not found by either id; such packages are skipped (reported once)");
 
         return null;
     }
@@ -513,11 +559,19 @@ internal sealed class GamePackages : IPackageGame
                 return StorageAccess.Unknown;
             }
 
-            if (ui.HasModalUIOpenExcept(Il2CppType.Of<WebUI_BackpackUI>())) return StorageAccess.PanelOpen;
-            if (OtherPanels.Any(panel => ui.IsUIActive(panel()))) return StorageAccess.PanelOpen;
-            if (!ui.IsUIActive(Il2CppType.Of<WebUI_BackpackUI>())) return StorageAccess.Allowed;
+            var bagPanel = _bagPanel ??= Il2CppType.Of<WebUI_BackpackUI>();
+            var otherPanels = _otherPanels ??= OtherPanels();
 
-            var bagScreen = ui.GetState<State_Web_BackpackUI>(Il2CppType.Of<State_Web_BackpackUI>());
+            if (ui.HasModalUIOpenExcept(bagPanel)) return StorageAccess.PanelOpen;
+
+            for (var i = 0; i < otherPanels.Length; i++)
+            {
+                if (ui.IsUIActive(otherPanels[i])) return StorageAccess.PanelOpen;
+            }
+
+            if (!ui.IsUIActive(bagPanel)) return StorageAccess.Allowed;
+
+            var bagScreen = ui.GetState<State_Web_BackpackUI>(_bagScreenState ??= Il2CppType.Of<State_Web_BackpackUI>());
 
             if (bagScreen == null)
             {
@@ -535,6 +589,23 @@ internal sealed class GamePackages : IPackageGame
             return StorageAccess.Unknown;
         }
     }
+
+    private static Il2CppSystem.Type[] OtherPanels() =>
+        new[]
+        {
+            Il2CppType.Of<WebUI_Brew>(),
+            Il2CppType.Of<WebUI_Compressor>(),
+            Il2CppType.Of<WebUI_Cooking>(),
+            Il2CppType.Of<WebUI_DroneHub>(),
+            Il2CppType.Of<WebUI_Dye>(),
+            Il2CppType.Of<WebUI_GreenhouseBuild>(),
+            Il2CppType.Of<WebUI_MaterialRack>(),
+            Il2CppType.Of<WebUI_RatCage>(),
+            Il2CppType.Of<WebUI_ShopUI>(),
+            Il2CppType.Of<WebUI_Shredder>(),
+            Il2CppType.Of<WebUI_ToolTable>(),
+            Il2CppType.Of<WebUI_TradeUI>(),
+        };
 
     /// <summary>
     /// Away from home the floor pickup would reach across maps, so a failed check counts as away and leaves the floor
@@ -586,6 +657,20 @@ internal sealed class GamePackages : IPackageGame
 
         _unpackActions.Clear();
         _knownConfig = config.Pointer;
+    }
+
+    /// <summary>
+    /// The nearest package point, found once per press: the press lines up all its unpacks in one frame, the character
+    /// stands still meanwhile, and the walk over every point of the home map cost a game call per point per unpack.
+    /// </summary>
+    private Vector3? PressPoint(ConfigManager config, LeadingRole role)
+    {
+        if (_hasPressPoint) return _pressPoint;
+
+        _pressPoint = NearestPackagePoint(config, role);
+        _hasPressPoint = true;
+
+        return _pressPoint;
     }
 
     /// <summary>
@@ -646,7 +731,11 @@ internal sealed class GamePackages : IPackageGame
 
     private static int Units(IEnumerable<Package> packages) => packages.Sum(package => package.Count);
 
-    private void ReportOnce(string operation, Exception ex) => LogOnce(operation, $"{operation} failed (each kind reported once): {ex}");
+    /// <summary>The exception's text is built only for the first report: a failure can repeat on every look of the watch.</summary>
+    private void ReportOnce(string operation, Exception ex)
+    {
+        if (_reportedFailures.Add(operation)) _log($"{operation} failed (each kind reported once): {ex}");
+    }
 
     private void LogOnce(string key, string message)
     {
@@ -654,5 +743,5 @@ internal sealed class GamePackages : IPackageGame
     }
 }
 
-/// <summary>One look at started unpacks: uses still with the character, units in the bag, and the queue as a log line.</summary>
-internal readonly record struct StartedLook(int Pending, int BagUnits, string Queue);
+/// <summary>One look at started unpacks: uses still with the character and units in the bag.</summary>
+internal readonly record struct StartedLook(int Pending, int BagUnits);

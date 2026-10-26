@@ -80,7 +80,7 @@ Settings live in `BepInEx\config\com.dev.survivallog.unpackall.cfg`, created the
 
 Tested on Survival Log 1.1.19611 with BepInEx `6.0.0-be.788`.
 
-Check `BepInEx\LogOutput.log` for `===== Unpack All 0.4.1 started`, followed by `unpack key F9` and `storages off`. The same lines, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
+Check `BepInEx\LogOutput.log` for `===== Unpack All 0.5.1 started`, followed by `unpack key F9` and `storages off`. The same lines, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
 
 If Unpack all does not show in the Mods menu, make sure the inventory's item tab is open on the bag side. If a press says it cannot unpack right now, the rest of the message and the log say why. If storage packages are not taken, check that `IncludeStorages` is `true` in the config and that no storage or workbench window is open.
 

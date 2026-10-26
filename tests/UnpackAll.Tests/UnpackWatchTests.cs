@@ -86,4 +86,15 @@ public class UnpackWatchTests
 
         Assert.Equal(new WatchStep.Quiet(), watch.Observe(pending: 0, bagUnits: 0, now: 10));
     }
+
+    [Fact]
+    public void A_look_that_finds_nothing_changed_makes_no_new_step()
+    {
+        // The watcher looks twice a second for as long as unpacks run; a quiet look should cost no allocation.
+        var watch = new UnpackWatch(started: 2, bagUnits: 2);
+
+        var first = watch.Observe(pending: 2, bagUnits: 2, now: 1);
+
+        Assert.Same(first, watch.Observe(pending: 2, bagUnits: 2, now: 1.5));
+    }
 }

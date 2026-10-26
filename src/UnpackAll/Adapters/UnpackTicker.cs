@@ -14,10 +14,26 @@ public sealed class UnpackTicker : MonoBehaviour
 
     internal static UnpackSession? Session;
     internal static Action<string> Log = _ => { };
+
+    /// <summary>Run when the game quits, so the log lines still queued for the file are written.</summary>
+    internal static Action Quit = () => { };
+
     private static readonly HashSet<string> ReportedFailures = new();
 
     public UnpackTicker(IntPtr pointer) : base(pointer)
     {
+    }
+
+    private void OnApplicationQuit()
+    {
+        try
+        {
+            Quit();
+        }
+        catch (Exception)
+        {
+            // The game is closing; there is nowhere left to report this.
+        }
     }
 
     private void Update()
