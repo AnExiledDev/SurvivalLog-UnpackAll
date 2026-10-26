@@ -2,22 +2,26 @@
 
 ## 0.5.0
 
-- Unpack all is now also in the Mods button on the workbench, stove, ration press, greenhouse, drone hub, brewing barrel, dye vat, rat cage, material rack and shop screens. While one of those screens is open it unpacks only what is in your bag; the floor and storages wait until it is closed, as before.
+- Unpack all is now also in the Mods button on the workbench, stove, ration press, greenhouse, drone hub, brewing barrel, dye vat, rat cage, material rack and shop screens.
+- While one of those screens is open, it only unpacks what's in your bag. Packages on the floor and in storages wait until you close it.
 - Made for Survival Log 1.1.19611.
 
 ## 0.4.1
 
-- After a game update, a hook that can no longer be placed is logged as an error, so the Mod Manager can mark the mod as maybe needing an update.
+- After a game update, Mod Manager can tell you if this mod may need an update.
 - Made for Survival Log 1.1.19131.
 
 ## 0.4.0
 
-- The Mods screen links this changelog.
+- Mod Manager's Mods screen links to this changelog.
 - Settings changed on the Mod Manager's Mods screen take effect at once.
-- The Mods screen shows the mod's name, description, category and links.
-- Exiled's Toolkit 0.4.0 or newer is optional. With it, settings changed on the Mods screen take effect without a restart; without it, at the next game start.
+- Mod Manager's Mods screen shows the mod's name, description, category and links.
+- Exiled's Toolkit 0.4.0 or newer is optional. With it, settings you change on the Mods screen take effect right away. Without it, they take effect the next time you start the game.
 - When the game is in Chinese, every reason a package can't be unpacked is shown in Chinese too.
 
 ## 0.3.1
 
-First public release. One press unpacks every furniture package in your bag, then the ones on the floor at home (and in your storages, if you turn that on), as far as your home has free package spots. F9 or the inventory's Mods menu.
+- First public release.
+- Press F9, or use the inventory's Mods menu, to unpack every furniture package in your bag, then the ones on the floor at home.
+- It can also take packages out of your storages, if you turn that on.
+- It never unpacks more than your home has free package spots for.
