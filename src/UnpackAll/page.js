@@ -553,8 +553,25 @@
     node = document.createElement('div');
     node.id = 'ua-toast';
     document.body.appendChild(node);
+    // A one-line message is never shrunk to fit; only the player's size applies.
+    uiSize(node, { fit: false });
 
     return node;
+  }
+
+  // Hands a panel to Exiled's Toolkit to be drawn at the player's UI size. Before the Toolkit's script has loaded it
+  // waits in a list the Toolkit reads; without the Toolkit nothing happens.
+  function uiSize(node, options) {
+    var toolkit = window.ExiledUi;
+
+    if (toolkit) {
+      toolkit.size(node, options);
+      return;
+    }
+
+    var waiting = window.__exiledUiWait = window.__exiledUiWait || [];
+    waiting.push([node, options]);
+    if (waiting.length > 32) waiting.shift();
   }
 
   function status(text) {

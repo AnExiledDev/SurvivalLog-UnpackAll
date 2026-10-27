@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.2
+
+- The message after a press can be drawn bigger or smaller with the UI size setting of Exiled's Toolkit 0.10.0 or newer. A change shows at once.
+- The Mods button and its menu keep the game's size, like the rest of the toolbar.
+- Made for Survival Log 1.1.19611.
+
 ## 0.5.1
 
 - Unpacking many packages at once no longer makes the game stutter, and neither does the first press after starting the game.
