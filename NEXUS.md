@@ -2,6 +2,8 @@ Name: Unpack All
 Summary: Unpack every furniture package in your bag and on the floor at home with one key (F9), and never more than your home has free spots for, so the queue doesn't fill up with unpacks that fail. It can also pull packages out of your storages if you turn that on. Uses the game's own Use action and waits behind the orders you already queued.
 
 Description (BBCode):
+[center][img]https://sldb.core-directive.com/media/save/1-save-safe.png[/img][/center]
+
 Unpacking furniture packages one at a time is slow, and lining up too many fills the queue with unpacks that fail. Unpack All unpacks everything in your bag and on the floor at home in one press, and never lines up more than your home has room for. It can also take packages out of your storages at home if you turn that on in the config.
 
 [size=5]Main features[/size]
