@@ -15,11 +15,13 @@ namespace UnpackAll;
 public sealed class Plugin : BasePlugin
 {
     private const string Guid = "com.dev.survivallog.unpackall";
-    private const string Version = "0.5.2";
+    private const string Version = "0.6.0";
 
     public override void Load()
     {
         if (!OptionalLive.IsToolkitInstalled) Log.LogInfo(OptionalLive.MissingNote);
+
+        OptionalUiSize.Bind(Config);
 
         var unpackKey = Config.Bind("Controls", "UnpackKey", KeyCode.F9,
             "Key that unpacks the packages in your bag first, then the ones on the floor at home, up to your free package spots. If IncludeStorages is true, packages in storages at home are unpacked last. None turns the key off, but Unpack all in the inventory's Mods menu still works.\n" +

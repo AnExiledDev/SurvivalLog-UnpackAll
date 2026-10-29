@@ -17,3 +17,9 @@ The value is a Unity key name, for example `F9`, `F11`, `Insert` or `Keypad5`. W
 | `IncludeStorages` | `false` | When `true`, packages in storages at home are unpacked too, after the bag and the floor. A storage stack is moved into your bag only if all of it fits your free package spots, and nothing is taken while a storage, workbench, shop or trade window is open. `false`, the default, leaves storages alone. |
 
 Locked storages, the drone hub and drones, the neighbour gift basket, the door box, and the bins of a brew barrel, shredder, compressor, dye vat or greenhouse are never touched. A storage stack that holds more packages than your free spots stays in its storage until you have room for all of it.
+
+## Interface
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `UiScale` | `0` | How big Unpack All's message after a press is drawn, in percent, from 75 to 200. At `0` it follows the UI size set in Exiled's Toolkit (its `UiScale`). Needs Exiled's Toolkit 0.11.0 or newer. |

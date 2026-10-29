@@ -19,6 +19,7 @@ public class ToastUiSizeTests
 
         // The second message reuses the toast it built, so the Toolkit is not handed it twice.
         Assert.Equal("1", page.Text("handed.length"));
+        Assert.Equal("1", page.Text("handed.filter(function (h) { return h.options.mod === 'UnpackAll'; }).length"));
         Assert.True(page.Is("handed[0].el === document.getElementById('ua-toast')"));
         Assert.True(page.Is("handed[0].options.fit === false"));
     }
