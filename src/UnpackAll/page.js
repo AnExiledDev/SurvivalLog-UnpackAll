@@ -1,6 +1,6 @@
 // Unpack All's web half. Runs in Root.html, the document every game page iframe sits in. Puts "Unpack all" in the
-// inventory toolbar's Mods menu, the dropdown it shares with other mods (see the slmod-menu block), and shows the
-// result of a press as a short toast. Talks to the plugin through vuplex.postMessage("slmod|unpackall|<verb>") and is
+// inventory toolbar's Mods menu, the dropdown it shares with other mods (see the slmod-menu block). The plugin shows
+// the result of a press as an Exiled's Toolkit toast. Talks to the plugin through vuplex.postMessage("slmod|unpackall|<verb>") and is
 // driven by window.__slunpackall.
 (function () {
   if (window.__slunpackall) return;
@@ -506,15 +506,12 @@
   var PREFIX = 'slmod|unpackall|';
   var MENU_ID = 'unpackall.unpack';
   var BUSY_TIMEOUT_MS = 5000;
-  var TOAST_MS = 3500;
   // An arrow rising out of an open box, drawn on the 24-unit grid the game's toolbar icons use.
   var ICON_PATH = 'M4 10h4v2H6v8h12v-8h-2v-2h4v12H4zM12 2l5 5h-3v8h-4V7H7z';
 
   var isBusy = false;
   var busyTimer = 0;
-  var toastTimer = 0;
 
-  var STYLE = '#ua-toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:2147483002;pointer-events:none;display:none;max-width:640px;text-align:center;padding:10px 18px;border-radius:8px;border:1px solid rgba(255,193,7,.75);background:linear-gradient(180deg,rgba(30,30,33,.94),rgba(18,18,20,.96));color:#eee;font-family:"Microsoft YaHei","PingFang SC",sans-serif;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.6)}';
 
   function send(message) {
     try {
@@ -522,7 +519,7 @@
     } catch (e) {}
   }
 
-  // One press at a time: a double click would otherwise ask twice. Every press is answered by a status line, which
+  // One press at a time: a double click would otherwise ask twice. Every press is answered by the plugin, which
   // frees the button; the timer frees it anyway if that answer never comes.
   function sendPress() {
     if (isBusy) return;
@@ -538,59 +535,9 @@
     clearTimeout(busyTimer);
   }
 
-  function toast() {
-    if (!document.getElementById('ua-toast-style')) {
-      var style = document.createElement('style');
-      style.id = 'ua-toast-style';
-      style.textContent = STYLE;
-      document.head.appendChild(style);
-    }
-
-    var node = document.getElementById('ua-toast');
-
-    if (node) return node;
-
-    node = document.createElement('div');
-    node.id = 'ua-toast';
-    document.body.appendChild(node);
-    // A one-line message is never shrunk to fit; only the player's size applies.
-    uiSize(node, { fit: false });
-
-    return node;
-  }
-
-  // Hands a panel to Exiled's Toolkit to be drawn at the player's UI size. Before the Toolkit's script has loaded it
-  // waits in a list the Toolkit reads; without the Toolkit nothing happens.
-  function uiSize(node, options) {
-    options = Object.assign({ mod: 'UnpackAll' }, options);
-    var toolkit = window.ExiledUi;
-
-    if (toolkit) {
-      toolkit.size(node, options);
-      return;
-    }
-
-    var waiting = window.__exiledUiWait = window.__exiledUiWait || [];
-    waiting.push([node, options]);
-    if (waiting.length > 32) waiting.shift();
-  }
-
-  function status(text) {
+  // The plugin answers every press once it has shown the result, which frees the menu row.
+  function answered() {
     clearBusy();
-
-    var node = toast();
-
-    // An empty status would be an empty box.
-    if (!text) {
-      node.style.display = 'none';
-
-      return;
-    }
-
-    node.textContent = text;
-    node.style.display = 'block';
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { node.style.display = 'none'; }, TOAST_MS);
   }
 
   // The plugin names the unpack key once the page is ready, so the menu row shows it; '' shows none.
@@ -616,6 +563,6 @@
     } catch (e) {}
   }, 400);
 
-  window.__slunpackall = { status: status, setKey: setKey, setText: setText };
+  window.__slunpackall = { answered: answered, setKey: setKey, setText: setText };
   send('ready');
 })();

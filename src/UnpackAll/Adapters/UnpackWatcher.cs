@@ -97,6 +97,6 @@ internal sealed class UnpackWatcher
 
         _log($"watch: done, {finished.Consumed} of {finished.Started} started unpack(s) used their package -> {message ?? "(no message)"}");
 
-        if (message != null) _page.Status(message, Clock.Now);
+        if (message != null) _page.Status(message);
     }
 }

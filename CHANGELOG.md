@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.1
+
+- The message after a press is now an Exiled's Toolkit toast, so it appears beside the game's HUD and in the Notifications history, at the Toolkit's UI size.
+- Removed: the `UiScale` setting under Interface, since the Toolkit now draws the message.
+- Exiled's Toolkit 0.11.0 or newer is now required.
+- Made for Survival Log 1.1.19611.
+
 ## 0.6.0
 
 - New: `UiScale` under Interface sets the size of Unpack All's message after a press on its own, from 75% to 200%, whatever Exiled's Toolkit's UI size is. At 0, the default, it follows the Toolkit's. Needs Exiled's Toolkit 0.11.0 or newer.

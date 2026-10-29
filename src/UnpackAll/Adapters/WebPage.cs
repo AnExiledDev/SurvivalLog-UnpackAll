@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using ExiledToolkit;
 using GameCore.HotUpdate;
 using GameCore.HotUpdate.ReduxUI;
 using UnpackAll.Core;
@@ -9,9 +10,9 @@ namespace UnpackAll.Adapters;
 
 /// <summary>
 /// The mod's half that lives in the game's web UI: page.js, run in the root document the game's own pages sit in. It
-/// puts Unpack all in the inventory toolbar's Mods menu and shows the result toast. The web view can reload at any time
-/// and lose the script, so it is checked for every couple of seconds and put back when the page says it is missing.
-/// The script itself goes only to a page that said so (see <see cref="PageCalls"/>).
+/// puts Unpack all in the inventory toolbar's Mods menu. The result of a press is an Exiled's Toolkit toast. The web view
+/// can reload at any time and lose the script, so it is checked for every couple of seconds and put back when the page
+/// says it is missing. The script itself goes only to a page that said so (see <see cref="PageCalls"/>).
 /// </summary>
 internal sealed class WebPage
 {
@@ -19,7 +20,6 @@ internal sealed class WebPage
     private const string ScriptResource = "UnpackAll.page.js";
 
     private readonly Action<string> _log;
-    private readonly PageCalls _calls = new();
     private string? _script;
     private double _nextCheckAt;
     private bool _hasReportedRunFailure;
@@ -37,17 +37,19 @@ internal sealed class WebPage
         Run(PageCalls.Probe);
     }
 
-    /// <summary>Sends the script to a page that said it has none, with a toast that found no script a moment ago.</summary>
-    public void Install(double now)
+    /// <summary>Sends the script to a page that said it has none.</summary>
+    public void Install()
     {
-        if (Run(_calls.Install(Script(), now))) _log("page script sent to the web UI");
+        if (Run(Script())) _log("page script sent to the web UI");
     }
 
-    /// <summary>
-    /// The result of a press, as a toast over the game. A page that lost the script asks for it, and the toast goes
-    /// along with that install, so a page that reloaded since the last check still shows it.
-    /// </summary>
-    public void Status(string text, double now) => Run(_calls.Status(text, now));
+    /// <summary>The result of a press, as an Exiled's Toolkit toast; the menu row is then free for the next press.</summary>
+    public void Status(string text, ToastKind kind = ToastKind.Info)
+    {
+        if (Toasts.Show(new ToastRequest(Texts.Source.Pick(GameLanguage.IsChinese()), text) { Kind = kind }).IsNone) _log("toast not shown: " + text);
+
+        Run(PageCalls.Answered);
+    }
 
     /// <summary>The unpack key's name for the Mods menu row; empty when the key is off.</summary>
     public void ShowKey(string name) => Run("window.__slunpackall&&window.__slunpackall.setKey(" + JsText.Literal(name) + ")");

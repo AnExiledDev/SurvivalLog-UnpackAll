@@ -23,6 +23,9 @@ public static class Texts
         "Unpack every package in your bag, then the ones on the floor at home, up to your free package spots",
         "拆封背包里的所有包裹，再拆封家里地上的包裹，数量以空余的包裹位为限");
 
+    /// <summary>Who a toast is from, on its first line.</summary>
+    public static readonly Phrase Source = new("Unpack All", "一键拆封");
+
     public static readonly Phrase Failed = new("Unpack All failed, see BepInEx/unpack-all.log.", "全部拆封失败，详见 BepInEx/unpack-all.log。");
 
     public static readonly Phrase NoWorld = new("the game world is not loaded", "游戏世界尚未加载");

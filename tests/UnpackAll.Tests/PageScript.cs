@@ -22,7 +22,7 @@ internal sealed class PageScript
 
     public bool Is(string expression) => _engine.Evaluate($"!!({expression})").AsBoolean();
 
-    public void Status(string text) => Run($"window.__slunpackall.status({System.Text.Json.JsonSerializer.Serialize(text)})");
+    public void Answered() => Run("window.__slunpackall.answered()");
 
     private static string Resource(string name)
     {

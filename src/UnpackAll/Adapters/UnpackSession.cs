@@ -1,4 +1,5 @@
 using System;
+using ExiledToolkit;
 using UnityEngine;
 using UnpackAll.Core;
 
@@ -106,7 +107,7 @@ internal sealed class UnpackSession
                     break;
                 case PageCommand.NoScript:
                     HotkeyGate.MenuClosed();
-                    _page.Install(Clock.Now);
+                    _page.Install();
                     break;
                 case PageCommand.Unknown unknown:
                     _log("page said: " + unknown.Text);
@@ -128,13 +129,13 @@ internal sealed class UnpackSession
 
             _log($"press: {outcome} -> {message ?? "(no message)"}");
 
-            if (message != null) _page.Status(message, Clock.Now);
+            if (message != null) _page.Status(message);
             if (outcome is UnpackOutcome.Done done) _watcher.Begin(done.Tally.Queued, Clock.Now);
         }
         catch (Exception ex)
         {
             _log("press failed: " + ex);
-            _page.Status(Texts.Failed.Pick(GameLanguage.IsChinese()), Clock.Now);
+            _page.Status(Texts.Failed.Pick(GameLanguage.IsChinese()), ToastKind.Error);
         }
     }
 
