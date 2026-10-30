@@ -18,6 +18,7 @@ internal sealed class UnpackSession
     private KeyCode _unpackKey = KeyCode.None;
     private readonly Action<string> _log;
     private readonly UnpackWatcher _watcher;
+    private readonly Func<bool> _isTyping = OptionalLive.IsTyping;
 
     private bool? _shownChinese;
     private double _nextLanguageLook;
@@ -49,8 +50,22 @@ internal sealed class UnpackSession
         var isPressed = TakePageCommands();
 
         if (HotkeyGate.IsMenuOpen && Input.GetKeyDown(KeyCode.Escape)) CloseMenu();
-        if (_unpackKey != KeyCode.None && Input.GetKeyDown(_unpackKey)) isPressed = true;
+        if (KeyGate.Fires(_unpackKey != KeyCode.None, _unpackKey != KeyCode.None && Input.GetKeyDown(_unpackKey), _isTyping)) isPressed = true;
         if (isPressed) UnpackAll();
+
+        ShowCraftedSent();
+    }
+
+    /// <summary>Tells the player when a craft sent its packages to the entryway; the game says nothing then.</summary>
+    private void ShowCraftedSent()
+    {
+        var sent = CraftedDelivery.TakeSent();
+
+        if (sent == 0) return;
+
+        var message = CraftedToDoor.Message(sent, GameLanguage.IsChinese());
+
+        if (message != null) _page.Status(message);
     }
 
     /// <summary>

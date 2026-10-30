@@ -1,6 +1,6 @@
 # Unpack All
 
-One press unpacks every furniture package in your bag and on the floor at home, and in your storages at home if you turn that on.
+One click unpacks every furniture package in your bag and on the floor at home, and in your storages at home if you turn that on. Furniture you craft goes straight to the entryway.
 
 Unpacking furniture packages one at a time is slow, and lining up more unpacks than your home has room for fills the action queue with unpacks that fail. Unpack All unpacks every package in your bag, then picks up the packages lying on the floor at home and unpacks those too, as far as your home has free package spots. With `IncludeStorages` turned on in the config, it then takes packages out of your storages at home and unpacks those as well.
 
@@ -12,22 +12,19 @@ Unpacking furniture packages one at a time is slow, and lining up more unpacks t
 - **Your queued actions stay**: unpacks join the end of your character's action queue, so actions you queued yourself run first.
 - **Clear messages**: a short message at the bottom of the screen says how many packages are unpacking, how many were picked up from the floor or taken from storages (and how many of those wait in your bag), and how many were left and why: no free package spot, a storage stack bigger than your free spots, your bag could not carry it, you are away from home, a window is open (or could not be checked), or the game's own reason for refusing.
 - **Follows up**: after starting, the mod checks that the unpacks really reached your character's queue and watches them until they are done. An unpack the game drops is never counted as unpacking: the message says how many were dropped, and a later message says so if an unpack ends without opening its package.
-- **Mods menu entry**: **Unpack all** in the inventory's Mods menu does the same as the key (see below).
+- **Crafted furniture to the entryway**: furniture packages you craft at a workbench go straight to the entryway, as if you had clicked the result window's Unpack to Entryway button. A package that an open Aid Platform commission asks for stays a package so you can hand it in, and when the entryway is full the rest stay packages in your bag (the result window still offers its button for them). A short message says how many were sent. `CraftedToDoor` in the config turns this off.
+- **Mods menu entry**: **Unpack all** in the inventory's Mods menu starts an unpack (see below).
 - **Log file**: every press, what was read and lined up, and how each batch ended, is written to `BepInEx\unpack-all.log`.
 
 Unpack All adds no data of its own to your save. The unpacks are real: packages come off the floor or out of your storages into your bag and are unpacked into furniture, exactly as if you had taken each one out and used it yourself. You can remove the mod at any time; packages and furniture stay as they are.
 
 ## Hotkeys
 
-| Key | What it does |
-| --- | --- |
-| `F9` | Unpacks the packages in your bag first, then the ones on the floor at home, up to your free package spots. If `IncludeStorages` is `true`, packages in storages at home are unpacked last. |
-
-`F9` works anywhere in a loaded game past the prologue. On the title screen and in the prologue it does nothing. It can be changed or turned off in the config.
+No key is set by default: **Unpack all** in the Mods menu does the unpacking. To unpack with a key as well, set `UnpackKey` in the config. A set key works anywhere in a loaded game past the prologue, but not on the title screen, in the prologue, or while you are typing in a text box.
 
 ## The Mods menu
 
-The mod adds a **Mods** button (a four-square icon) to the toolbar on the bag side of the inventory screen, between the game's discard and sort buttons. Click it to open a small menu with **Unpack all**, which shows the unpack key next to it and does the same as the key. Esc or a click anywhere else closes the menu, and the game's own hotkeys are held back while it is open so Esc closes only the menu.
+The mod adds a **Mods** button (a four-square icon) to the toolbar on the bag side of the inventory screen, between the game's discard and sort buttons. Click it to open a small menu with **Unpack all**, which starts an unpack (and shows the unpack key next to it, if you set one). Esc or a click anywhere else closes the menu, and the game's own hotkeys are held back while it is open so Esc closes only the menu.
 
 On the inventory the Unpack all entry only shows on the bag's item tab, and not in the prologue. The same Mods button is also in the bag panel of the workbench, stove, ration press, greenhouse, drone hub, brewing barrel, dye vat, rat cage, material rack and shop screens (not the shredder or the drone trade); there it unpacks only what is in your bag, since the floor and storages are left alone while a station screen is open. Other mods that use the same Mods menu list their own entries in it, so you get one button instead of one per mod; when no mod has an entry to show, the button is taken away.
 
@@ -43,6 +40,10 @@ Nothing is taken out of a storage while a storage, workbench, shop or trade wind
 
 While unpacks from an earlier press are still lined up, another press does nothing but say so: their spots are only freed as each one runs, so a second batch would have nowhere to go.
 
+## Crafted furniture
+
+When a craft at a workbench makes furniture packages, the mod hands them to the game's own Unpack to Entryway, the same as the result window's button, as many as the entryway has free spots for. The game keeps no quest mark on a package, so the mod checks the Aid Platform commissions that are not finished: a package one of them still asks for (dyed or not) stays a package. Stranger requests and casual orders are not checked; turn `CraftedToDoor` off if you craft furniture for those.
+
 ## Known issues and limits
 
 - Packages beyond your free package spots stay in your bag, on the floor or in your storages. Place some furniture to free spots, then press again.
@@ -56,9 +57,9 @@ While unpacks from an earlier press are still lined up, another press does nothi
 
 ## Requirements
 
-- Survival Log 1.1.19611. Built and tested on this version; a game update can break it until the mod is updated.
+- Survival Log 1.1.20151. Built and tested on this version; a game update can break it until the mod is updated.
 - The [BepInEx Pack for Survival Log](https://www.nexusmods.com/survivallog/mods/12), the BepInEx 6 (IL2CPP) build for the game.
-- [Exiled's Toolkit](https://github.com/AnExiledDev/SurvivalLog-ExiledToolkit) 0.11.0 or newer. Unpack All does not load without it. It shows the message after a press as a toast and applies settings changed on the Mod Manager's Mods screen without a restart.
+- [Exiled's Toolkit](https://github.com/AnExiledDev/SurvivalLog-ExiledToolkit) 0.12.0 or newer. Unpack All does not load without it. It shows the message after a press as a toast and applies settings changed on the Mod Manager's Mods screen without a restart.
 
 ## Install
 
@@ -78,9 +79,9 @@ Settings live in `BepInEx\config\com.dev.survivallog.unpackall.cfg`, created the
 
 ## Troubleshooting
 
-Tested on Survival Log 1.1.19611 with BepInEx `6.0.0-be.788`.
+Tested on Survival Log 1.1.20151 with BepInEx `6.0.0-be.788`.
 
-Check `BepInEx\LogOutput.log` for `===== Unpack All 0.5.1 started`, followed by `unpack key F9` and `storages off`. The same lines, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
+Check `BepInEx\LogOutput.log` for `===== Unpack All 0.7.0 started`, followed by `unpack key None`, `storages off` and `crafted furniture to the entryway on`. The same lines, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
 
 If Unpack all does not show in the Mods menu, make sure the inventory's item tab is open on the bag side. If a press says it cannot unpack right now, the rest of the message and the log say why. If storage packages are not taken, check that `IncludeStorages` is `true` in the config and that no storage or workbench window is open.
 
@@ -102,7 +103,7 @@ dotnet build src/UnpackAll -c Release -p:GameDir="C:\path\to\Survival Log"
 
 `GameDir` is the game folder. The default in the project file is a local path you will almost certainly need to override. The output DLL is at `src\UnpackAll\bin\Release\UnpackAll.dll`.
 
-The unit tests cover the pure rules (what a package is, how spots are handed out across the bag, the floor and storages, the follow-up watch and the messages) and need nothing from the game:
+The unit tests cover the pure rules (what a package is, how spots are handed out across the bag, the floor and storages, which crafted packages go to the entryway, when the key fires, the follow-up watch and the messages) and need nothing from the game:
 
 ```
 dotnet test tests/UnpackAll.Tests

@@ -1,5 +1,5 @@
 Name: Unpack All
-Summary: Unpack every furniture package in your bag and on the floor at home with one key (F9), and never more than your home has free spots for, so the queue doesn't fill up with unpacks that fail. It can also pull packages out of your storages if you turn that on. Uses the game's own Use action and waits behind the orders you already queued.
+Summary: Unpack every furniture package in your bag and on the floor at home with one click, never more than your home has free spots for, and send crafted furniture straight to the entryway. It can also pull packages out of your storages if you turn that on. Uses the game's own Use action and waits behind the orders you already queued.
 
 Description (BBCode):
 [center][img]https://sldb.core-directive.com/media/save/1-save-safe.png[/img][/center]
@@ -13,14 +13,12 @@ Unpacking furniture packages one at a time is slow, and lining up too many fills
 [*][b]Game's own Use action[/b]: the same action as the inventory's Use button, with the game's checks and timings.[/*]
 [*][b]Your queued actions stay[/b]: unpacks join the end of the queue, so your own actions run first.[/*]
 [*][b]Clear messages[/b]: says how many are unpacking, how many were picked up or taken from storages, and why any were left.[/*]
+[*][b]Crafted furniture to the entryway[/b]: furniture you craft at a workbench goes straight to the entryway, as if you had clicked Unpack to Entryway. A package an open Aid Platform commission asks for stays a package, and when the entryway is full the rest stay in your bag. You can turn this off in the config.[/*]
 [*][b]Mods menu[/b]: a Mods button on the inventory toolbar, and in the bag panel of most station screens, with an Unpack all entry, shared with other mods that use it.[/*]
 [/list]
 
 [size=5]Hotkeys[/size]
-[list]
-[*][b]F9[/b]: unpack all (in a loaded game, past the prologue).[/*]
-[/list]
-F9 can be changed or turned off in the config. Unpack all in the Mods menu works either way.
+No key is set by default: use Unpack all in the Mods menu. You can set an unpack key in the config. It does nothing while you are typing in a text box.
 
 Works in English and Chinese.
 
@@ -41,9 +39,9 @@ The mod adds no data of its own to your save, but the unpacks are real: packages
 
 [size=5]Requirements[/size]
 [list]
-[*]Survival Log 1.1.19611. A game update can break it until the mod is updated.[/*]
+[*]Survival Log 1.1.20151. A game update can break it until the mod is updated.[/*]
 [*][url=https://www.nexusmods.com/survivallog/mods/12]BepInEx for Survival Log[/url]. Install it first.[/*]
-[*][url=https://www.nexusmods.com/survivallog/mods/61]Exiled's Toolkit[/url] 0.11.0 or newer. Unpack All does not load without it. It shows the message after a press as a toast and applies settings changed on the Mod Manager's Mods screen without a restart.[/*]
+[*][url=https://www.nexusmods.com/survivallog/mods/61]Exiled's Toolkit[/url] 0.12.0 or newer. Unpack All does not load without it. It shows the message after a press as a toast and applies settings changed on the Mod Manager's Mods screen without a restart.[/*]
 [/list]
 
 [size=5]Installation[/size]
@@ -59,7 +57,7 @@ The mod adds no data of its own to your save, but the unpacks are real: packages
 Delete [font=Courier New]UnpackAll.dll[/font] from the [font=Courier New]BepInEx\plugins[/font] folder.
 
 [size=5]Configuration[/size]
-To change the key or turn storages on, edit [font=Courier New]BepInEx\config\com.dev.survivallog.unpackall.cfg[/font] while the game is closed, or do it in game on the Mod Manager's Mods screen, where changes take effect at once (see [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll/blob/main/CONFIG.md]CONFIG.md[/url]; the cfg file explains each setting in English and Chinese).
+To set a key, turn storages on or turn crafted furniture to the entryway off, edit [font=Courier New]BepInEx\config\com.dev.survivallog.unpackall.cfg[/font] while the game is closed, or do it in game on the Mod Manager's Mods screen, where changes take effect at once (see [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll/blob/main/CONFIG.md]CONFIG.md[/url]; the cfg file explains each setting in English and Chinese).
 
 [size=5]Feedback[/size]
 Found a bug or have an idea? Come say hi on the [url=https://discord.gg/trTsyxUFqg]Core Directive Discord[/url], or post in this page's Posts tab. For bugs, please include [font=Courier New]BepInEx\LogOutput.log[/font] and [font=Courier New]BepInEx\unpack-all.log[/font].
@@ -80,14 +78,12 @@ Open source under MIT: [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll
 [*][b]游戏自己的使用动作[/b]：和背包界面「使用」按钮相同的动作，遵循游戏自己的检查和时间。[/*]
 [*][b]保留你排好的行动[/b]：拆封加在队列末尾，你自己排的行动先执行。[/*]
 [*][b]清楚的提示[/b]：告诉你正在拆封多少个、从地上捡起或从储物家具取出多少个，以及剩下的为什么没拆。[/*]
+[*][b]做好的家具送到玄关[/b]：在工作台做好的家具会直接送到玄关，和点「拆到玄关」一样。援助平台上未完成的委托需要的包裹会保留为包裹；玄关放满后，其余的留在背包里。可以在配置中关闭。[/*]
 [*][b]Mods 菜单[/b]：背包工具栏上，以及大部分设施界面背包栏里的 Mods 按钮，里面有「全部拆封」一项，和其他使用同一菜单的模组共用。[/*]
 [/list]
 
 [size=5]快捷键[/size]
-[list]
-[*][b]F9[/b]：全部拆封（在已读取的存档中、序章之后）。[/*]
-[/list]
-F9 可以在配置中修改或关闭。无论如何，Mods 菜单里的「全部拆封」都能用。
+默认不绑定按键：请使用 Mods 菜单里的「全部拆封」。可以在配置中设置拆封键；在文本框中输入文字时，此键不起作用。
 
 模组不会往存档里写入自己的数据，但拆封是真实的：包裹会从地上或储物家具进入背包，再变成家具。你可以随时移除模组，包裹和家具都会保持原样。
 
@@ -107,9 +103,9 @@ F9 可以在配置中修改或关闭。无论如何，Mods 菜单里的「全部
 
 [size=5]前置要求[/size]
 [list]
-[*]Survival Log 1.1.19611。游戏更新后模组可能暂时失效，直到模组更新为止。[/*]
+[*]Survival Log 1.1.20151。游戏更新后模组可能暂时失效，直到模组更新为止。[/*]
 [*][url=https://www.nexusmods.com/survivallog/mods/12]BepInEx for Survival Log[/url]，请先安装。[/*]
-[*][url=https://www.nexusmods.com/survivallog/mods/61]Exiled's Toolkit[/url] 0.11.0 或更新版本。没有它本模组不会加载。它把按下后的提示显示为弹出通知，并让在 Mod Manager 的「模组」界面改动的设置无需重启即可生效。[/*]
+[*][url=https://www.nexusmods.com/survivallog/mods/61]Exiled's Toolkit[/url] 0.12.0 或更新版本。没有它本模组不会加载。它把按下后的提示显示为弹出通知，并让在 Mod Manager 的「模组」界面改动的设置无需重启即可生效。[/*]
 [/list]
 
 [size=5]安装[/size]

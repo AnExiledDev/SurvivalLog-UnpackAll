@@ -38,10 +38,10 @@
   <!-- What the Mod Manager's Mods screen shows about this mod. -->
   <ItemGroup>
     <AssemblyMetadata Include="ModManager.Name" Value="Unpack All&#10;一键拆封" />
-    <AssemblyMetadata Include="ModManager.Description" Value="One press unpacks every furniture package in your bag, then the ones on the floor at home (and in your storages, if you turn that on), as far as your home has free package spots. F9 or the inventory's Mods menu.&#10;一键拆封背包里的所有家具包裹，再拆封家里地上的包裹（开启后还包括储物家具中的包裹），数量以家里空余的包裹位为限。按 F9 或使用背包界面的 Mods 菜单。" />
+    <AssemblyMetadata Include="ModManager.Description" Value="One press unpacks every furniture package in your bag, then the ones on the floor at home (and in your storages, if you turn that on), as far as your home has free package spots, from the inventory's Mods menu. Crafted furniture goes straight to the entryway.&#10;一键拆封背包里的所有家具包裹，再拆封家里地上的包裹（开启后还包括储物家具中的包裹），数量以家里空余的包裹位为限，在背包界面的 Mods 菜单中使用。做好的家具会直接送到玄关。" />
     <AssemblyMetadata Include="ModManager.Author" Value="AnExiledDev" />
     <AssemblyMetadata Include="ModManager.Category" Value="QualityOfLife" />
-    <AssemblyMetadata Include="ModManager.GameVersion" Value="1.1.19611" />
+    <AssemblyMetadata Include="ModManager.GameVersion" Value="1.1.20151" />
     <AssemblyMetadata Include="ModManager.Settings" Value="Restart" />
     <AssemblyMetadata Include="ModManager.NexusId" Value="58" />
     <AssemblyMetadata Include="ModManager.GitHub" Value="AnExiledDev/SurvivalLog-UnpackAll" />

@@ -40,5 +40,14 @@ public static class Texts
 
     public static readonly Phrase QueueRefused = new("the game would not line it up", "游戏无法将它加入队列");
 
-    public static IReadOnlyList<Phrase> All { get; } = new[] { MenuLabel, MenuTitle, Failed, NoWorld, NoHome, ReadFailed, CheckFailed, NoReasonGiven, QueueRefused };
+    public static readonly Phrase SentOneToDoor = new(
+        "1 crafted furniture package sent to the entryway. Remember to install it.",
+        "1 件做好的家具包裹已送到玄关，记得去安装。");
+
+    /// <summary>{0} is the number of packages sent.</summary>
+    public static readonly Phrase SentToDoor = new(
+        "{0} crafted furniture packages sent to the entryway. Remember to install them.",
+        "{0} 件做好的家具包裹已送到玄关，记得去安装。");
+
+    public static IReadOnlyList<Phrase> All { get; } = new[] { MenuLabel, MenuTitle, Failed, NoWorld, NoHome, ReadFailed, CheckFailed, NoReasonGiven, QueueRefused, SentOneToDoor, SentToDoor };
 }

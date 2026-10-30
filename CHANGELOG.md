@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.0
+
+- New: furniture you craft at a workbench goes straight to the entryway, as if you had clicked Unpack to Entryway. A package an open Aid Platform commission asks for stays a package, and when the entryway is full the rest stay in your bag. Turn it off with `CraftedToDoor` under Furniture.
+- New installs start with no unpack key, since Unpack all in the Mods menu does the same. If you already had the mod, your config keeps the key it had; set `UnpackKey` to `None` to drop it.
+- The unpack key does nothing while you are typing in a text box.
+- Exiled's Toolkit 0.12.0 or newer is now required.
+- Made for Survival Log 1.1.20151.
+
 ## 0.6.1
 
 - The message after a press is now an Exiled's Toolkit toast, so it appears beside the game's HUD and in the Notifications history, at the Toolkit's UI size.

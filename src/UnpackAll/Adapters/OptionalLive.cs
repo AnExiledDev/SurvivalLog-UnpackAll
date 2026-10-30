@@ -18,7 +18,7 @@ internal static class OptionalLive
     public const string ToolkitGuid = "com.dev.survivallog.exiledtoolkit";
 
     /// <summary>The oldest Toolkit the mod loads with: its toasts and live settings come from it.</summary>
-    public const string ToolkitVersion = ">=0.11.0";
+    public const string ToolkitVersion = ">=0.12.0";
 
     public const string MissingNote = "Exiled's Toolkit is not installed, so settings are read once at start. Install Toolkit 0.4.0 or newer to change settings in game without a restart.";
 
@@ -53,6 +53,10 @@ internal static class OptionalLive
             return false;
         }
     }
+
+    /// <summary>Whether a text box in any mod's page has the keyboard (Toolkit 0.12.0 and newer).</summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public static bool IsTyping() => ExiledToolkit.Typing.IsActive;
 
     // Kept in its own method so the Toolkit's types are only looked up when it is installed.
     [MethodImpl(MethodImplOptions.NoInlining)]
