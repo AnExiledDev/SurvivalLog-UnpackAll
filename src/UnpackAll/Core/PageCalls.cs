@@ -13,4 +13,11 @@ public static class PageCalls
 
     /// <summary>Tells the page a press was answered, so its menu row takes the next press. A page with no script has no press waiting.</summary>
     public const string Answered = "window.__slunpackall&&window.__slunpackall.answered()";
+
+    /// <summary>
+    /// Sets the Pick up entry in the game's click menu: no entry when why is null, a working one when it is empty,
+    /// otherwise a greyed-out one whose tip gives the reason.
+    /// </summary>
+    public static string PickMenu(string? why, string label, string tip) =>
+        "window.__slunpackall&&window.__slunpackall.pickMenu(" + (why == null ? "null" : JsText.Literal(why)) + "," + JsText.Literal(label) + "," + JsText.Literal(tip) + ")";
 }

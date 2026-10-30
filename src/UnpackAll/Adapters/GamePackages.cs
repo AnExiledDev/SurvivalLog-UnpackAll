@@ -417,7 +417,7 @@ internal sealed class GamePackages : IPackageGame
     /// False in the prologue, before the disaster. This is the game's own test (SceneRatManager.IsPostDisaster reads
     /// the same field), done here without the game's singleton lookup.
     /// </summary>
-    private static bool IsAfterDisaster(BattleLogicWorld world) => world._GameTimeManager?.WorldStateType == WorldStateType.PostDisaster;
+    internal static bool IsAfterDisaster(BattleLogicWorld world) => world._GameTimeManager?.WorldStateType == WorldStateType.PostDisaster;
 
     /// <summary>
     /// What starting the batch does to the character's queue. The game's start (ActionCacheComponent.DoActionCache)

@@ -25,3 +25,7 @@ Locked storages, the drone hub and drones, the neighbour gift basket, the door b
 | `CraftedToDoor` | `true` | When `true`, every furniture package you craft at a workbench is sent to the entryway at once, as the result window's Unpack to Entryway button does. A package that an open Aid Platform commission asks for stays a package, and when the entryway is full the rest stay packages in your bag. `false` leaves crafted packages in your bag. |
 
 Only Aid Platform commissions are checked. Stranger requests and casual orders are not, so turn this off if you craft furniture to hand in for those.
+
+## Pick up
+
+Pick up, in the click menu of a furniture package in the yard, has no setting and no key.

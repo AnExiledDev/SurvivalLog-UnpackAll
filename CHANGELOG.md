@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.0
+
+- New: click a furniture package in the yard and choose Pick up to put it back in your bag, for example to hand it in for an Aid Platform commission.
+- If your bag can't carry the package, it goes into a shopping bag in the living room instead. If neither has room, the package stays in the yard and a message says so.
+- A package you bought from the shop can no longer be returned for a refund once you pick it up. The Pick up tooltip says so.
+- Made for Survival Log 1.1.20151.
+
 ## 0.7.0
 
 - New: furniture you craft at a workbench goes straight to the entryway, as if you had clicked Unpack to Entryway. A package an open Aid Platform commission asks for stays a package, and when the entryway is full the rest stay in your bag. Turn it off with `CraftedToDoor` under Furniture.

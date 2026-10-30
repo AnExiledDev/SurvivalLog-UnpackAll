@@ -12,6 +12,7 @@ public class PageCommandTests
         Assert.Equal(new PageCommand.Unpack(), PageCommand.Parse("slmod|unpackall|unpack"));
         Assert.Equal(new PageCommand.Ready(), PageCommand.Parse("slmod|unpackall|ready"));
         Assert.Equal(new PageCommand.NoScript(), PageCommand.Parse("slmod|unpackall|noscript"));
+        Assert.Equal(new PageCommand.PickUp(), PageCommand.Parse("slmod|unpackall|pickup"));
     }
 
     [Fact]

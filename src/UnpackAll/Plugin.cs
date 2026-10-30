@@ -15,7 +15,7 @@ namespace UnpackAll;
 public sealed class Plugin : BasePlugin
 {
     private const string Guid = "com.dev.survivallog.unpackall";
-    private const string Version = "0.7.0";
+    private const string Version = "0.8.0";
 
     public override void Load()
     {
@@ -25,12 +25,13 @@ public sealed class Plugin : BasePlugin
         var log = new UnpackLog(Log, Path.Combine(Paths.BepInExRootPath, "unpack-all.log"));
         var harmony = new Harmony(Guid);
         var game = new GamePackages(log.Write, log.Detail);
-        var session = new UnpackSession(game, new WebPage(log.Write), log.Write, log.Detail);
+        var session = new UnpackSession(game, new GamePickUp(log.Write), new WebPage(log.Write), log.Write, log.Detail);
 
         log.Write($"===== Unpack All {Version} started");
         PageMessages.Apply(harmony, log.Write);
         HotkeyGate.Apply(harmony, log.Write);
         CraftedDelivery.Apply(harmony, log.Write, log.Detail);
+        MenuOpening.Apply(harmony, session.MenuOpened, log.Write);
         OptionalLive.Watch(unpackKey, key =>
         {
             session.UseKey(key);

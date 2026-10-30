@@ -20,6 +20,9 @@ public abstract record PageCommand
     /// <summary>The inventory toolbar's Mods menu opened or closed; the page gets no keys, so Esc has to close it from here.</summary>
     public sealed record Menu(bool IsOpen) : PageCommand;
 
+    /// <summary>Pick up was clicked in the game's click menu; it acts on whatever the menu is open on at that moment.</summary>
+    public sealed record PickUp : PageCommand;
+
     /// <summary>The page script just installed itself.</summary>
     public sealed record Ready : PageCommand;
 
@@ -41,6 +44,7 @@ public abstract record PageCommand
         {
             ("unpack", 1) => new Unpack(),
             ("menu", 2) when parts[1] is "0" or "1" => new Menu(parts[1] == "1"),
+            ("pickup", 1) => new PickUp(),
             ("ready", 1) => new Ready(),
             ("noscript", 1) => new NoScript(),
             _ => new Unknown(message),

@@ -14,6 +14,7 @@ Unpacking furniture packages one at a time is slow, and lining up too many fills
 [*][b]Your queued actions stay[/b]: unpacks join the end of the queue, so your own actions run first.[/*]
 [*][b]Clear messages[/b]: says how many are unpacking, how many were picked up or taken from storages, and why any were left.[/*]
 [*][b]Crafted furniture to the entryway[/b]: furniture you craft at a workbench goes straight to the entryway, as if you had clicked Unpack to Entryway. A package an open Aid Platform commission asks for stays a package, and when the entryway is full the rest stay in your bag. You can turn this off in the config.[/*]
+[*][b]Pick up yard packages[/b]: click a furniture package in the yard and choose Pick up to put it back in your bag, for example to hand it in for an Aid Platform commission. If your bag can't carry it, it goes into a shopping bag in the living room. If neither has room, the package stays in the yard. A bought package can no longer be returned to the shop after you pick it up.[/*]
 [*][b]Mods menu[/b]: a Mods button on the inventory toolbar, and in the bag panel of most station screens, with an Unpack all entry, shared with other mods that use it.[/*]
 [/list]
 
@@ -79,6 +80,7 @@ Open source under MIT: [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll
 [*][b]保留你排好的行动[/b]：拆封加在队列末尾，你自己排的行动先执行。[/*]
 [*][b]清楚的提示[/b]：告诉你正在拆封多少个、从地上捡起或从储物家具取出多少个，以及剩下的为什么没拆。[/*]
 [*][b]做好的家具送到玄关[/b]：在工作台做好的家具会直接送到玄关，和点「拆到玄关」一样。援助平台上未完成的委托需要的包裹会保留为包裹；玄关放满后，其余的留在背包里。可以在配置中关闭。[/*]
+[*][b]拿起院子里的包裹[/b]：点击屋外空地上的家具包裹，选择「拿起」，就能把它放回背包，比如拿去交援助平台的委托。背包装不下时，会放进客厅的购物袋；两边都没有地方时，包裹留在原地。买来的包裹拿起后就不能再退货了。[/*]
 [*][b]Mods 菜单[/b]：背包工具栏上，以及大部分设施界面背包栏里的 Mods 按钮，里面有「全部拆封」一项，和其他使用同一菜单的模组共用。[/*]
 [/list]
 

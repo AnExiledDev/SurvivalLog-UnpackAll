@@ -25,7 +25,7 @@ public static class WarmUp
 
     private static void WarmPage()
     {
-        foreach (var message in new[] { "unpack", "menu|1", "menu|0", "ready", "noscript", "diag|warm" }) PageCommand.Parse(PageCommand.Prefix + message);
+        foreach (var message in new[] { "unpack", "pickup", "menu|1", "menu|0", "ready", "noscript", "diag|warm" }) PageCommand.Parse(PageCommand.Prefix + message);
     }
 
     private static void WarmWatch()

@@ -13,6 +13,7 @@ Unpacking furniture packages one at a time is slow, and lining up more unpacks t
 - **Clear messages**: a short message at the bottom of the screen says how many packages are unpacking, how many were picked up from the floor or taken from storages (and how many of those wait in your bag), and how many were left and why: no free package spot, a storage stack bigger than your free spots, your bag could not carry it, you are away from home, a window is open (or could not be checked), or the game's own reason for refusing.
 - **Follows up**: after starting, the mod checks that the unpacks really reached your character's queue and watches them until they are done. An unpack the game drops is never counted as unpacking: the message says how many were dropped, and a later message says so if an unpack ends without opening its package.
 - **Crafted furniture to the entryway**: furniture packages you craft at a workbench go straight to the entryway, as if you had clicked the result window's Unpack to Entryway button. A package that an open Aid Platform commission asks for stays a package so you can hand it in, and when the entryway is full the rest stay packages in your bag (the result window still offers its button for them). A short message says how many were sent. `CraftedToDoor` in the config turns this off.
+- **Pick up yard packages**: click a furniture package in the yard and choose **Pick up** to put it back in your bag, for example to hand it in for an Aid Platform commission. If your bag can't carry it, it goes into a shopping bag in the living room. A bought package can no longer be returned to the shop after you pick it up.
 - **Mods menu entry**: **Unpack all** in the inventory's Mods menu starts an unpack (see below).
 - **Log file**: every press, what was read and lined up, and how each batch ended, is written to `BepInEx\unpack-all.log`.
 
@@ -43,6 +44,18 @@ While unpacks from an earlier press are still lined up, another press does nothi
 ## Crafted furniture
 
 When a craft at a workbench makes furniture packages, the mod hands them to the game's own Unpack to Entryway, the same as the result window's button, as many as the entryway has free spots for. The game keeps no quest mark on a package, so the mod checks the Aid Platform commissions that are not finished: a package one of them still asks for (dyed or not) stays a package. Stranger requests and casual orders are not checked; turn `CraftedToDoor` off if you craft furniture for those.
+
+## Pick up
+
+Clicking a furniture package standing in the yard opens the game's menu for it, with Install and Destroy. The mod adds **Pick up** to that menu. It puts the package back in your bag as the same item, with the same colour, so you can hand it in, sell it or install it somewhere else later.
+
+- If your bag is too full or too heavy for it, the package goes into one of the shopping bags in the living room, the same ones the shop fills when you buy with a full bag. The game makes a shopping bag if there is none yet.
+- If neither your bag nor the shopping bags have room, nothing changes: the package stays in the yard and a message says so.
+- A package you bought from the shop can be returned for a refund while it stands in the yard. Once you pick it up, the shop no longer takes it back. The Pick up tooltip and the message after it both say so.
+- Pick up shows greyed out, with the reason in its tooltip, while the package is being moved or installed, when you are not at home, or for a package that has no bag form.
+- Pick up only shows after the disaster, on packages in the yard. Furniture already installed, the shopping bags and the boxes by the doors don't get it.
+
+There is no setting and no key for Pick up.
 
 ## Known issues and limits
 
@@ -81,7 +94,7 @@ Settings live in `BepInEx\config\com.dev.survivallog.unpackall.cfg`, created the
 
 Tested on Survival Log 1.1.20151 with BepInEx `6.0.0-be.788`.
 
-Check `BepInEx\LogOutput.log` for `===== Unpack All 0.7.0 started`, followed by `unpack key None`, `storages off` and `crafted furniture to the entryway on`. The same lines, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
+Check `BepInEx\LogOutput.log` for `===== Unpack All 0.8.0 started`, followed by `unpack key None`, `storages off` and `crafted furniture to the entryway on`. The same lines, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
 
 If Unpack all does not show in the Mods menu, make sure the inventory's item tab is open on the bag side. If a press says it cannot unpack right now, the rest of the message and the log say why. If storage packages are not taken, check that `IncludeStorages` is `true` in the config and that no storage or workbench window is open.
 
@@ -103,7 +116,7 @@ dotnet build src/UnpackAll -c Release -p:GameDir="C:\path\to\Survival Log"
 
 `GameDir` is the game folder. The default in the project file is a local path you will almost certainly need to override. The output DLL is at `src\UnpackAll\bin\Release\UnpackAll.dll`.
 
-The unit tests cover the pure rules (what a package is, how spots are handed out across the bag, the floor and storages, which crafted packages go to the entryway, when the key fires, the follow-up watch and the messages) and need nothing from the game:
+The unit tests cover the pure rules (what a package is, how spots are handed out across the bag, the floor and storages, which crafted packages go to the entryway, when a yard package can be picked up and where it goes, when the key fires, the follow-up watch and the messages) and need nothing from the game:
 
 ```
 dotnet test tests/UnpackAll.Tests

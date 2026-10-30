@@ -243,6 +243,20 @@ var FakeDocument = class {
 
   createDocumentFragment() { return new FakeElement('#fragment'); }
 
+  // Live, as in a browser: an iframe added later is in the list the script kept.
+  getElementsByTagName(tagName) {
+    var doc = this;
+    var upper = tagName.toUpperCase();
+    var found = function () {
+      return descendantsOf([doc.head, doc.body]).filter(function (element) { return element.tagName === upper; });
+    };
+
+    return {
+      get length() { return found().length; },
+      item: function (index) { return found()[index] || null; }
+    };
+  }
+
   getElementById(id) {
     searches++;
 
@@ -291,3 +305,37 @@ window.__slmodmenu = {
   watch: function () {},
   placeAll: function () {}
 };
+
+// The game's click menu in its own iframe, with the entries the game drew for a yard package. Its own document, as
+// the game's pages are.
+function openGameMenu() {
+  var frame = new FakeElement('iframe');
+  var doc = new FakeDocument();
+  var container = new FakeElement('div');
+  var column = new FakeElement('div');
+
+  frame.src = 'https://ui.local/UI/SelectMenu/SelectMenu.html';
+  frame.contentDocument = doc;
+  container.id = 'menu-container';
+  column.className = 'menu-col';
+  ['Install', 'Destroy'].forEach(function (label) {
+    var entry = new FakeElement('div');
+
+    entry.className = 'menu-btn';
+    entry.textContent = label;
+    column.appendChild(entry);
+  });
+  container.appendChild(column);
+  doc.body.appendChild(container);
+  document.body.appendChild(frame);
+
+  return doc;
+}
+
+function pickEntryIn(doc) {
+  return doc.querySelector('.slua-pickup');
+}
+
+function click(element) {
+  (element.listeners.click || []).forEach(function (listener) { listener({ stopPropagation: function () {} }); });
+}

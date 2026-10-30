@@ -14,6 +14,7 @@ internal sealed class UnpackSession
     private const double LanguageLookSeconds = 1;
 
     private readonly GamePackages _game;
+    private readonly IPickUpGame _pickUp;
     private readonly WebPage _page;
     private KeyCode _unpackKey = KeyCode.None;
     private readonly Action<string> _log;
@@ -24,9 +25,10 @@ internal sealed class UnpackSession
     private double _nextLanguageLook;
 
     /// <param name="detail">Logs a line to the mod's own file only.</param>
-    public UnpackSession(GamePackages game, WebPage page, Action<string> log, Action<string> detail)
+    public UnpackSession(GamePackages game, IPickUpGame pickUp, WebPage page, Action<string> log, Action<string> detail)
     {
         _game = game;
+        _pickUp = pickUp;
         _page = page;
         _log = log;
         _watcher = new UnpackWatcher(game, page, log, detail);
@@ -54,6 +56,18 @@ internal sealed class UnpackSession
         if (isPressed) UnpackAll();
 
         ShowCraftedSent();
+    }
+
+    /// <summary>
+    /// Called by the game's own menu-open call, before the game sends the menu to the web view, so the page knows
+    /// whether to add Pick up by the time the menu's entries are drawn.
+    /// </summary>
+    public void MenuOpened(long id)
+    {
+        var isChinese = GameLanguage.IsChinese();
+
+        GameMenu.Opening(id);
+        _page.ShowPickMenu(PickUpRun.EntryState(_pickUp, id == 0 ? null : id, isChinese), Texts.PickUpLabel.Pick(isChinese), Texts.PickUpTip.Pick(isChinese));
     }
 
     /// <summary>Tells the player when a craft sent its packages to the entryway; the game says nothing then.</summary>
@@ -106,6 +120,9 @@ internal sealed class UnpackSession
                 case PageCommand.Unpack:
                     isPressed = true;
                     break;
+                case PageCommand.PickUp:
+                    PickUp();
+                    break;
                 case PageCommand.Menu { IsOpen: true }:
                     HotkeyGate.MenuOpened();
                     break;
@@ -153,6 +170,39 @@ internal sealed class UnpackSession
             _page.Status(Texts.Failed.Pick(GameLanguage.IsChinese()), ToastKind.Error);
         }
     }
+
+    /// <summary>Picks up whatever the click menu is open on right now; a package that left the yard has its menu shut.</summary>
+    private void PickUp()
+    {
+        var isChinese = GameLanguage.IsChinese();
+
+        try
+        {
+            var openOn = GameMenu.OpenOn();
+            var outcome = PickUpRun.Run(_pickUp, openOn);
+            var message = PickUpMessage.Describe(outcome, isChinese);
+
+            _log($"pick up on {openOn?.ToString() ?? "nothing"}: {outcome} -> {message}");
+            _page.Status(message, PickUpToast(outcome));
+
+            if (outcome is not PickUpOutcome.PickedUp || openOn is not { } id) return;
+
+            _page.ShowPickMenu(null, "", "");
+            GameMenu.CloseIfOn(id);
+        }
+        catch (Exception ex)
+        {
+            _log("pick up failed: " + ex);
+            _page.Status(Texts.PickUpError.Pick(isChinese), ToastKind.Error);
+        }
+    }
+
+    private static ToastKind PickUpToast(PickUpOutcome outcome) => outcome switch
+    {
+        PickUpOutcome.PickedUp => ToastKind.Success,
+        PickUpOutcome.Failed => ToastKind.Error,
+        _ => ToastKind.Warning,
+    };
 
     private string KeyName() => _unpackKey == KeyCode.None ? "" : _unpackKey.ToString();
 }

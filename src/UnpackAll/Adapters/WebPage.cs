@@ -58,6 +58,9 @@ internal sealed class WebPage
     public void ShowMenuText(string label, string title) =>
         Run("window.__slunpackall&&window.__slunpackall.setText(" + JsText.Literal(label) + "," + JsText.Literal(title) + ")");
 
+    /// <summary>The Pick up entry in the game's click menu: none when why is null, working when empty, else greyed out with the reason.</summary>
+    public void ShowPickMenu(string? why, string label, string tip) => Run(PageCalls.PickMenu(why, label, tip));
+
     /// <summary>Closes the inventory's Mods menu, which any mod carrying the slmod-menu block in its page.js may have made.</summary>
     public void CloseMenu() => Run("window.__slmodmenu&&window.__slmodmenu.close()");
 
