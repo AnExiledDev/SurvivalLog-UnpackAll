@@ -3,7 +3,7 @@ using System;
 namespace UnpackAll.Core;
 
 /// <summary>
-/// What the inventory button's script asks for. It sends "slmod|unpackall|" followed by a verb; anything else parses
+/// What the page script asks for. It sends "slmod|unpackall|" followed by a verb; anything else parses
 /// to Unknown so it can be logged rather than acted on (the script's "diag|..." notes land there on purpose).
 /// </summary>
 public abstract record PageCommand
@@ -13,12 +13,6 @@ public abstract record PageCommand
     private PageCommand()
     {
     }
-
-    /// <summary>The Unpack all row of the inventory's Mods menu was clicked.</summary>
-    public sealed record Unpack : PageCommand;
-
-    /// <summary>The inventory toolbar's Mods menu opened or closed; the page gets no keys, so Esc has to close it from here.</summary>
-    public sealed record Menu(bool IsOpen) : PageCommand;
 
     /// <summary>Pick up was clicked in the game's click menu; it acts on whatever the menu is open on at that moment.</summary>
     public sealed record PickUp : PageCommand;
@@ -42,8 +36,6 @@ public abstract record PageCommand
 
         return (parts[0], parts.Length) switch
         {
-            ("unpack", 1) => new Unpack(),
-            ("menu", 2) when parts[1] is "0" or "1" => new Menu(parts[1] == "1"),
             ("pickup", 1) => new PickUp(),
             ("ready", 1) => new Ready(),
             ("noscript", 1) => new NoScript(),

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.0
+
+- The Mods menu now comes from Exiled's Toolkit, the same menu the other mods use. Unpack all still sits in it on the inventory and on the station screens, and it shows your unpack key if you set one.
+- Exiled's Toolkit 0.15.0 or newer is now required.
+- Made for Survival Log 1.1.20151.
+
 ## 0.8.0
 
 - New: click a furniture package in the yard and choose Pick up to put it back in your bag, for example to hand it in for an Aid Platform commission.

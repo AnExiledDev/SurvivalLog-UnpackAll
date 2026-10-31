@@ -43,7 +43,7 @@ internal sealed class WebPage
         if (Run(Script())) _log("page script sent to the web UI");
     }
 
-    /// <summary>The result of a press, as an Exiled's Toolkit toast; the menu row is then free for the next press.</summary>
+    /// <summary>The result of a press, as an Exiled's Toolkit toast; Pick up is then free for the next press.</summary>
     public void Status(string text, ToastKind kind = ToastKind.Info)
     {
         if (Toasts.Show(new ToastRequest(Texts.Source.Pick(GameLanguage.IsChinese()), text) { Kind = kind }).IsNone) _log("toast not shown: " + text);
@@ -51,18 +51,8 @@ internal sealed class WebPage
         Run(PageCalls.Answered);
     }
 
-    /// <summary>The unpack key's name for the Mods menu row; empty when the key is off.</summary>
-    public void ShowKey(string name) => Run("window.__slunpackall&&window.__slunpackall.setKey(" + JsText.Literal(name) + ")");
-
-    /// <summary>Names the menu row and its tooltip in the game's language.</summary>
-    public void ShowMenuText(string label, string title) =>
-        Run("window.__slunpackall&&window.__slunpackall.setText(" + JsText.Literal(label) + "," + JsText.Literal(title) + ")");
-
     /// <summary>The Pick up entry in the game's click menu: none when why is null, working when empty, else greyed out with the reason.</summary>
     public void ShowPickMenu(string? why, string label, string tip) => Run(PageCalls.PickMenu(why, label, tip));
-
-    /// <summary>Closes the inventory's Mods menu, which any mod carrying the slmod-menu block in its page.js may have made.</summary>
-    public void CloseMenu() => Run("window.__slmodmenu&&window.__slmodmenu.close()");
 
     private bool Run(string javaScript)
     {

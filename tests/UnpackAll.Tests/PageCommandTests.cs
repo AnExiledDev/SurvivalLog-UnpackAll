@@ -7,25 +7,17 @@ namespace UnpackAll.Tests;
 public class PageCommandTests
 {
     [Fact]
-    public void The_button_and_the_script_messages_parse_to_their_commands()
+    public void The_script_messages_parse_to_their_commands()
     {
-        Assert.Equal(new PageCommand.Unpack(), PageCommand.Parse("slmod|unpackall|unpack"));
         Assert.Equal(new PageCommand.Ready(), PageCommand.Parse("slmod|unpackall|ready"));
         Assert.Equal(new PageCommand.NoScript(), PageCommand.Parse("slmod|unpackall|noscript"));
         Assert.Equal(new PageCommand.PickUp(), PageCommand.Parse("slmod|unpackall|pickup"));
     }
 
-    [Fact]
-    public void Menu_tells_whether_the_mods_menu_is_open_so_esc_closes_it_and_not_the_inventory()
-    {
-        Assert.Equal(new PageCommand.Menu(true), PageCommand.Parse("slmod|unpackall|menu|1"));
-        Assert.Equal(new PageCommand.Menu(false), PageCommand.Parse("slmod|unpackall|menu|0"));
-    }
-
     [Theory]
-    [InlineData("slmod|unpackall|unpack|now")]
-    [InlineData("slmod|unpackall|menu")]
-    [InlineData("slmod|unpackall|menu|yes")]
+    [InlineData("slmod|unpackall|pickup|now")]
+    [InlineData("slmod|unpackall|unpack")]
+    [InlineData("slmod|unpackall|menu|1")]
     [InlineData("slmod|unpackall|explode")]
     [InlineData("slmod|unpackall|diag|cannot read the inventory tab state")]
     [InlineData("slmod|unpackall|")]

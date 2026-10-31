@@ -6,13 +6,11 @@ using UnpackAll.Core;
 namespace UnpackAll.Adapters;
 
 /// <summary>
-/// The mod's game side, run once a frame. Button clicks arrive on the web view's thread and the hotkey arrives here;
-/// both only ask for a press, and the press itself runs in this frame's update, at most once a frame.
+/// The mod's game side, run once a frame. The Mods menu row and the hotkey only ask for a press, and the press itself
+/// runs in this frame's update, at most once a frame.
 /// </summary>
 internal sealed class UnpackSession
 {
-    private const double LanguageLookSeconds = 1;
-
     private readonly GamePackages _game;
     private readonly IPickUpGame _pickUp;
     private readonly WebPage _page;
@@ -21,8 +19,7 @@ internal sealed class UnpackSession
     private readonly UnpackWatcher _watcher;
     private readonly Func<bool> _isTyping = OptionalLive.IsTyping;
 
-    private bool? _shownChinese;
-    private double _nextLanguageLook;
+    private bool _isMenuPressed;
 
     /// <param name="detail">Logs a line to the mod's own file only.</param>
     public UnpackSession(GamePackages game, IPickUpGame pickUp, WebPage page, Action<string> log, Action<string> detail)
@@ -34,12 +31,15 @@ internal sealed class UnpackSession
         _watcher = new UnpackWatcher(game, page, log, detail);
     }
 
-    /// <summary>Takes a new unpack key and names it on the menu row.</summary>
+    /// <summary>Takes a new unpack key and names it on the Mods menu row.</summary>
     public void UseKey(KeyCode unpackKey)
     {
         _unpackKey = unpackKey;
-        _page.ShowKey(KeyName());
+        ModsMenu.Add(MenuRow.Entry(KeyName(), MenuPressed));
     }
+
+    /// <summary>The Mods menu row was picked; Exiled's Toolkit calls this on the main thread.</summary>
+    private void MenuPressed() => _isMenuPressed = true;
 
     public void Update()
     {
@@ -47,11 +47,12 @@ internal sealed class UnpackSession
 
         _page.KeepInstalled(now);
         _watcher.Tick(now);
-        KeepLanguage(now);
+        TakePageCommands();
 
-        var isPressed = TakePageCommands();
+        var isPressed = _isMenuPressed;
 
-        if (HotkeyGate.IsMenuOpen && Input.GetKeyDown(KeyCode.Escape)) CloseMenu();
+        _isMenuPressed = false;
+
         if (KeyGate.Fires(_unpackKey != KeyCode.None, _unpackKey != KeyCode.None && Input.GetKeyDown(_unpackKey), _isTyping)) isPressed = true;
         if (isPressed) UnpackAll();
 
@@ -82,63 +83,20 @@ internal sealed class UnpackSession
         if (message != null) _page.Status(message);
     }
 
-    /// <summary>
-    /// The player can switch the game's language at any time, so it is read once a second and the menu row follows.
-    /// The first look waits half a second, so it and the page check (every two seconds from the first frame) never
-    /// land on the same frame.
-    /// </summary>
-    private void KeepLanguage(double now)
+    /// <summary>Handles the page's messages.</summary>
+    private void TakePageCommands()
     {
-        if (_nextLanguageLook == 0) _nextLanguageLook = now + (LanguageLookSeconds / 2);
-        if (now < _nextLanguageLook) return;
-
-        _nextLanguageLook = now + LanguageLookSeconds;
-
-        var isChinese = GameLanguage.IsChinese();
-
-        if (isChinese == _shownChinese) return;
-
-        _shownChinese = isChinese;
-        _page.ShowMenuText(Texts.MenuLabel.Pick(isChinese), Texts.MenuTitle.Pick(isChinese));
-    }
-
-    private void CloseMenu()
-    {
-        _page.CloseMenu();
-        HotkeyGate.MenuClosed();
-    }
-
-    /// <summary>Handles the page's messages; true when the button was clicked at least once since the last frame.</summary>
-    private bool TakePageCommands()
-    {
-        var isPressed = false;
-
         while (PageMessages.TryTake(out var command))
         {
             switch (command)
             {
-                case PageCommand.Unpack:
-                    isPressed = true;
-                    break;
                 case PageCommand.PickUp:
                     PickUp();
                     break;
-                case PageCommand.Menu { IsOpen: true }:
-                    HotkeyGate.MenuOpened();
-                    break;
-                case PageCommand.Menu:
-                    HotkeyGate.MenuClosed();
-                    break;
                 case PageCommand.Ready:
                     _log("page script ready");
-                    // A reloaded page has no menu, and one left marked open would hold the game's hotkeys for good.
-                    HotkeyGate.MenuClosed();
-                    _page.ShowKey(KeyName());
-                    // A reloaded page shows the English row again, so the next language look renames it.
-                    _shownChinese = null;
                     break;
                 case PageCommand.NoScript:
-                    HotkeyGate.MenuClosed();
                     _page.Install();
                     break;
                 case PageCommand.Unknown unknown:
@@ -148,8 +106,6 @@ internal sealed class UnpackSession
                     throw new InvalidOperationException("unhandled page command " + command);
             }
         }
-
-        return isPressed;
     }
 
     private void UnpackAll()

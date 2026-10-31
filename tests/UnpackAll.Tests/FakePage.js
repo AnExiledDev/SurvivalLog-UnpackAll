@@ -1,5 +1,4 @@
-// Just enough of Root.html for page.js to run in Jint: the root document, the vuplex bridge and a Mods menu that keeps
-// what it is handed. Test code only; nothing here ships.
+// Just enough of Root.html for page.js to run in Jint: the root document, the vuplex bridge and the game's click menu. Test code only; nothing here ships.
 var window = this;
 
 var location = { protocol: 'https:' };
@@ -282,28 +281,6 @@ var posted = [];
 
 window.vuplex = {
   postMessage: function (message) { posted.push(message); }
-};
-
-// A Mods menu already in Root.html with a higher version than the block in page.js, so that block only registers with
-// it. The menu itself is tested in Exiled's Toolkit.
-var menuEntries = {};
-
-window.__slmodmenu = {
-  version: 99,
-  add: function (entry) {
-    menuEntries[entry.id] = entry;
-
-    return true;
-  },
-  update: function (id, changes) {
-    if (!menuEntries[id]) return false;
-
-    for (var key in changes) menuEntries[id][key] = changes[key];
-
-    return true;
-  },
-  watch: function () {},
-  placeAll: function () {}
 };
 
 // The game's click menu in its own iframe, with the entries the game drew for a yard package. Its own document, as
