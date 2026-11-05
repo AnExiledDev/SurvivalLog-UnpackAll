@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using ExiledToolkit.Game;
 using UnpackAll.Core;
 
 namespace UnpackAll.Adapters;

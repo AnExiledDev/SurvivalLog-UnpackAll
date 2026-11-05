@@ -40,9 +40,9 @@ The mod adds no data of its own to your save, but the unpacks are real: packages
 
 [size=5]Requirements[/size]
 [list]
-[*]Survival Log 1.1.20151. A game update can break it until the mod is updated.[/*]
+[*]Survival Log 1.1.20719. A game update can break it until the mod is updated.[/*]
 [*][url=https://www.nexusmods.com/survivallog/mods/12]BepInEx for Survival Log[/url]. Install it first.[/*]
-[*][url=https://www.nexusmods.com/survivallog/mods/61]Exiled's Toolkit[/url] 0.15.0 or newer. Unpack All does not load without it. It draws the Mods menu, shows the message after a press as a toast and applies settings changed on the Mod Manager's Mods screen without a restart.[/*]
+[*][url=https://www.nexusmods.com/survivallog/mods/61]Exiled's Toolkit[/url] 0.19.0 or newer. Unpack All does not load without it. It draws the Mods menu, shows the message after a press as a toast and applies settings changed on the Mod Manager's Mods screen without a restart.[/*]
 [/list]
 
 [size=5]Installation[/size]
@@ -105,9 +105,9 @@ Open source under MIT: [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll
 
 [size=5]前置要求[/size]
 [list]
-[*]Survival Log 1.1.20151。游戏更新后模组可能暂时失效，直到模组更新为止。[/*]
+[*]Survival Log 1.1.20719。游戏更新后模组可能暂时失效，直到模组更新为止。[/*]
 [*][url=https://www.nexusmods.com/survivallog/mods/12]BepInEx for Survival Log[/url]，请先安装。[/*]
-[*][url=https://www.nexusmods.com/survivallog/mods/61]Exiled's Toolkit[/url] 0.15.0 或更新版本。没有它本模组不会加载。它提供 Mods 菜单，把按下后的提示显示为弹出通知，并让在 Mod Manager 的「模组」界面改动的设置无需重启即可生效。[/*]
+[*][url=https://www.nexusmods.com/survivallog/mods/61]Exiled's Toolkit[/url] 0.19.0 或更新版本。没有它本模组不会加载。它提供 Mods 菜单，把按下后的提示显示为弹出通知，并让在 Mod Manager 的「模组」界面改动的设置无需重启即可生效。[/*]
 [/list]
 
 [size=5]安装[/size]

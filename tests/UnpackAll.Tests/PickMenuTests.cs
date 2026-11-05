@@ -95,6 +95,43 @@ public class PickMenuTests
         Assert.Equal("0", page.Text("searches"));
     }
 
+    // ===== Load order (Exiled's Toolkit's page API) =====
+
+    private const string SaidReady = "posted.indexOf('slmod|unpackall|ready') >= 0";
+
+    [Fact]
+    public void With_the_toolkit_loaded_first_the_page_says_ready_at_once()
+    {
+        var page = new PageScript(isToolkitFirst: true);
+
+        Assert.True(page.Is(SaidReady));
+    }
+
+    /// <summary>
+    /// The game can run Unpack All's script before the Toolkit's. Until the Toolkit's arrives the page sends nothing and
+    /// draws nothing; then it says it is ready and draws the entry the plugin already asked for.
+    /// </summary>
+    [Fact]
+    public void With_the_page_loaded_first_it_waits_for_the_toolkit_then_says_ready_and_draws_the_entry()
+    {
+        var page = new PageScript(isToolkitFirst: false);
+
+        page.Run("var menu = openGameMenu();");
+        page.Run(PageCalls.PickMenu("", "Pick up", "tip"));
+
+        Assert.Equal("0", page.Text("posted.length"));
+        Assert.False(page.Is("pickEntryIn(menu)"));
+
+        page.LoadToolkit();
+
+        Assert.True(page.Is(SaidReady));
+        Assert.True(page.Is("pickEntryIn(menu)"));
+
+        page.Run("click(pickEntryIn(menu));");
+
+        Assert.Equal("1", page.Text(Picks));
+    }
+
     [Fact]
     public void An_empty_menu_gets_no_entry()
     {

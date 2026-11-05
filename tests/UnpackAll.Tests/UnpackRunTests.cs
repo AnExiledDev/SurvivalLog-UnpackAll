@@ -1,3 +1,4 @@
+using ExiledToolkit.Kit;
 using UnpackAll.Core;
 using Xunit;
 using static UnpackAll.Tests.FakeGame;

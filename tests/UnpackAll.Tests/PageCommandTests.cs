@@ -1,4 +1,3 @@
-using System.Text.Json;
 using UnpackAll.Core;
 using Xunit;
 
@@ -34,20 +33,5 @@ public class PageCommandTests
     public void Only_messages_with_our_prefix_are_claimed_so_other_mods_and_the_game_keep_theirs(string? message)
     {
         Assert.False(PageCommand.IsOurs(message));
-    }
-
-    [Theory]
-    [InlineData("Unpacking 3 packages.")]
-    [InlineData("say \"hi\" \\ bye")]
-    [InlineData("line\nbreak\r\tand \u2028 \u2029")]
-    [InlineData("</script><script>alert(1)</script>")]
-    [InlineData("当前无法使用。")]
-    [InlineData("")]
-    public void Any_text_reaches_the_page_unchanged_and_cannot_break_out_of_its_string(string text)
-    {
-        var literal = JsText.Literal(text);
-
-        Assert.Equal(text, JsonSerializer.Deserialize<string>(literal));
-        Assert.DoesNotContain("<", literal);
     }
 }

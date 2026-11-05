@@ -1,5 +1,8 @@
 using System;
 using ExiledToolkit;
+using ExiledToolkit.Game;
+using ExiledToolkit.Kit;
+using ExiledToolkit.Web;
 using UnityEngine;
 using UnpackAll.Core;
 
@@ -11,13 +14,14 @@ namespace UnpackAll.Adapters;
 /// </summary>
 internal sealed class UnpackSession
 {
+    private readonly PageMailbox _messages = PageInbox.Listen(PageCommand.Prefix);
     private readonly GamePackages _game;
     private readonly IPickUpGame _pickUp;
     private readonly WebPage _page;
     private KeyCode _unpackKey = KeyCode.None;
     private readonly Action<string> _log;
     private readonly UnpackWatcher _watcher;
-    private readonly Func<bool> _isTyping = OptionalLive.IsTyping;
+    private readonly Func<bool> _isTyping = () => Typing.IsActive;
 
     private bool _isMenuPressed;
 
@@ -86,8 +90,10 @@ internal sealed class UnpackSession
     /// <summary>Handles the page's messages.</summary>
     private void TakePageCommands()
     {
-        while (PageMessages.TryTake(out var command))
+        while (_messages.TryTake(out var message))
         {
+            var command = PageCommand.Parse(message);
+
             switch (command)
             {
                 case PageCommand.PickUp:

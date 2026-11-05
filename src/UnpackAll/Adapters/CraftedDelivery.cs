@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using ExiledToolkit.Game;
 using GameCore.HotUpdate.Battle.Logic;
-using HarmonyLib;
 using UnpackAll.Core;
 
 namespace UnpackAll.Adapters;
@@ -23,27 +23,24 @@ internal static class CraftedDelivery
     private static readonly List<long> Send = new();
     private static readonly Func<int, bool> IsWanted = IsWantedByCommission;
 
-    private static Action<string> _log = _ => { };
     private static Action<string> _detail = _ => { };
-    private static bool _hasReportedFailure;
+    private static PatchKit? _hooks;
     private static int _sentSinceLastLook;
 
     public static volatile bool IsOn = true;
 
-    public static void Apply(Harmony harmony, Action<string> log, Action<string> detail)
+    public static void Apply(PatchKit hooks, Action<string> detail)
     {
-        _log = log;
+        _hooks = hooks;
         _detail = detail;
 
-        try
-        {
-            harmony.Patch(AccessTools.Method(typeof(ToolTableManager), nameof(ToolTableManager.CollectNewItemIds)), postfix: new HarmonyMethod(typeof(CraftedDelivery), nameof(AfterCollect)));
-            log("crafted furniture packages can go to the entryway");
-        }
-        catch (Exception ex)
-        {
-            log("could not hook ToolTableManager.CollectNewItemIds, crafted furniture stays in your bag: " + ex.Message);
-        }
+        hooks.Patch(
+            typeof(CraftedDelivery),
+            typeof(ToolTableManager),
+            nameof(ToolTableManager.CollectNewItemIds),
+            postfix: nameof(AfterCollect),
+            done: "crafted furniture packages can go to the entryway",
+            consequence: "crafted furniture stays in your bag");
     }
 
     /// <summary>How many packages were sent since the last call, for the toast.</summary>
@@ -67,10 +64,7 @@ internal static class CraftedDelivery
         }
         catch (Exception ex)
         {
-            if (_hasReportedFailure) return;
-
-            _hasReportedFailure = true;
-            _log("sending crafted furniture to the entryway failed, the packages stay in the bag (reported once): " + ex);
+            _hooks?.Fail("sending crafted furniture to the entryway, the packages stay in the bag", ex);
         }
     }
 

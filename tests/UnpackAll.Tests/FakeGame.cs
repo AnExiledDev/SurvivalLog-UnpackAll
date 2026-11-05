@@ -1,3 +1,4 @@
+using ExiledToolkit.Kit;
 using UnpackAll.Core;
 
 namespace UnpackAll.Tests;

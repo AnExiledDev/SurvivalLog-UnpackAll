@@ -1,15 +1,7 @@
 using System.Collections.Generic;
+using ExiledToolkit.Kit;
 
 namespace UnpackAll.Core;
-
-/// <summary>One piece of on-screen text in the two languages the game ships.</summary>
-public readonly record struct Phrase(string En, string Zh)
-{
-    public string Pick(bool isChinese) => isChinese ? Zh : En;
-
-    /// <summary>A line the game wrote itself, which is already in the player's language.</summary>
-    public static Phrase FromGame(string line) => new(line, line);
-}
 
 /// <summary>
 /// The fixed words the mod puts on screen, including its own reasons a package can't be unpacked; the toasts after a

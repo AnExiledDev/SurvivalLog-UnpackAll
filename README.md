@@ -70,9 +70,9 @@ There is no setting and no key for Pick up.
 
 ## Requirements
 
-- Survival Log 1.1.20151. Built and tested on this version; a game update can break it until the mod is updated.
+- Survival Log 1.1.20719. Built for this version; a game update can break it until the mod is updated.
 - The [BepInEx Pack for Survival Log](https://www.nexusmods.com/survivallog/mods/12), the BepInEx 6 (IL2CPP) build for the game.
-- [Exiled's Toolkit](https://github.com/AnExiledDev/SurvivalLog-ExiledToolkit) 0.15.0 or newer. Unpack All does not load without it. It draws the Mods menu, shows the message after a press as a toast and applies settings changed on the Mod Manager's Mods screen without a restart.
+- [Exiled's Toolkit](https://github.com/AnExiledDev/SurvivalLog-ExiledToolkit) 0.19.0 or newer. Unpack All does not load without it. It draws the Mods menu, shows the message after a press as a toast and applies settings changed on the Mod Manager's Mods screen without a restart.
 
 ## Install
 
@@ -94,7 +94,7 @@ Settings live in `BepInEx\config\com.dev.survivallog.unpackall.cfg`, created the
 
 Tested on Survival Log 1.1.20151 with BepInEx `6.0.0-be.788`.
 
-Check `BepInEx\LogOutput.log` for `===== Unpack All 0.9.0 started`, followed by `unpack key None`, `storages off` and `crafted furniture to the entryway on`. The same lines, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
+Check `BepInEx\LogOutput.log` for `===== Unpack All 0.9.1 started`, followed by `unpack key None`, `storages off` and `crafted furniture to the entryway on`. The same lines, plus every press (what was in the bag, on the floor and in storages, the free spots, each unpack lined up) and how each batch ended, is in `BepInEx\unpack-all.log`, which survives restarts.
 
 If Unpack all does not show in the Mods menu, make sure the inventory's item tab is open on the bag side. If a press says it cannot unpack right now, the rest of the message and the log say why. If storage packages are not taken, check that `IncludeStorages` is `true` in the config and that no storage or workbench window is open.
 

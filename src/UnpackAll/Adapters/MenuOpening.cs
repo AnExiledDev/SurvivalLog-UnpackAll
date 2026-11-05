@@ -1,6 +1,6 @@
 using System;
+using ExiledToolkit.Game;
 using GameCore.HotUpdate.ReduxUI;
-using HarmonyLib;
 
 namespace UnpackAll.Adapters;
 
@@ -12,25 +12,20 @@ namespace UnpackAll.Adapters;
 internal static class MenuOpening
 {
     private static Action<long> _onOpened = _ => { };
-    private static Action<string> _log = _ => { };
-    private static bool _hasReportedFailure;
+    private static PatchKit? _hooks;
 
-    public static void Apply(Harmony harmony, Action<long> onOpened, Action<string> log)
+    public static void Apply(PatchKit hooks, Action<long> onOpened)
     {
         _onOpened = onOpened;
-        _log = log;
+        _hooks = hooks;
 
-        try
-        {
-            harmony.Patch(
-                AccessTools.Method(typeof(Ac_SelectMenu_Open), nameof(Ac_SelectMenu_Open.SendAction)),
-                postfix: new HarmonyMethod(typeof(MenuOpening), nameof(Opened)));
-            log("the Pick up entry is sent as the click menu opens");
-        }
-        catch (Exception ex)
-        {
-            log($"could not hook Ac_SelectMenu_Open.SendAction, so the click menu has no Pick up entry: {ex.Message}");
-        }
+        hooks.Patch(
+            typeof(MenuOpening),
+            typeof(Ac_SelectMenu_Open),
+            nameof(Ac_SelectMenu_Open.SendAction),
+            postfix: nameof(Opened),
+            done: "the Pick up entry is sent as the click menu opens",
+            consequence: "so the click menu has no Pick up entry");
     }
 
     // Harmony matches the parameter by its name in the game's method.
@@ -42,9 +37,7 @@ internal static class MenuOpening
         }
         catch (Exception ex)
         {
-            if (!_hasReportedFailure) _log("sending the Pick up entry as the menu opened failed (reported once): " + ex);
-
-            _hasReportedFailure = true;
+            _hooks?.Fail("sending the Pick up entry as the menu opened", ex);
         }
     }
 }

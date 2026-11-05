@@ -11,7 +11,7 @@ function setInterval(callback) {
   return intervals.length;
 }
 
-// One run of every interval the script set, which is how its 400 ms page check runs.
+// One run of every interval set, which is how Exiled's Toolkit's 250 ms page check runs.
 function poll() {
   intervals.slice().forEach(function (callback) { callback(); });
 }
@@ -220,12 +220,15 @@ function descendantsOf(roots) {
   return found;
 }
 
+// href is the page's address; the Toolkit's page check skips a document without one, as it skips the about:blank a new
+// iframe holds first.
 var FakeDocument = class {
-  constructor() {
+  constructor(href) {
     this.head = new FakeElement('head');
     this.body = new FakeElement('body');
     this.head.isRoot = true;
     this.body.isRoot = true;
+    this.defaultView = { location: { href: href || 'about:blank' } };
   }
 
   createElement(tagName) { return new FakeElement(tagName); }
@@ -242,18 +245,12 @@ var FakeDocument = class {
 
   createDocumentFragment() { return new FakeElement('#fragment'); }
 
-  // Live, as in a browser: an iframe added later is in the list the script kept.
+  // The browser hands back the list it keeps for the tag, so asking for it is not a search; it is read here the moment
+  // it is asked for, which is all the scripts need of it.
   getElementsByTagName(tagName) {
-    var doc = this;
     var upper = tagName.toUpperCase();
-    var found = function () {
-      return descendantsOf([doc.head, doc.body]).filter(function (element) { return element.tagName === upper; });
-    };
 
-    return {
-      get length() { return found().length; },
-      item: function (index) { return found()[index] || null; }
-    };
+    return descendantsOf([this.head, this.body]).filter(function (element) { return element.tagName === upper; });
   }
 
   getElementById(id) {
@@ -286,12 +283,13 @@ window.vuplex = {
 // The game's click menu in its own iframe, with the entries the game drew for a yard package. Its own document, as
 // the game's pages are.
 function openGameMenu() {
+  var src = 'https://ui.local/UI/SelectMenu/SelectMenu.html';
   var frame = new FakeElement('iframe');
-  var doc = new FakeDocument();
+  var doc = new FakeDocument(src);
   var container = new FakeElement('div');
   var column = new FakeElement('div');
 
-  frame.src = 'https://ui.local/UI/SelectMenu/SelectMenu.html';
+  frame.src = src;
   frame.contentDocument = doc;
   container.id = 'menu-container';
   column.className = 'menu-col';

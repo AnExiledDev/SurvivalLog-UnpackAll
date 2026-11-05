@@ -1,8 +1,10 @@
 using System;
-using System.IO;
 using System.Threading;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
+using ExiledToolkit;
+using ExiledToolkit.Game;
+using ExiledToolkit.Kit;
 using HarmonyLib;
 using UnityEngine;
 using UnpackAll.Adapters;
@@ -11,44 +13,48 @@ using UnpackAll.Core;
 namespace UnpackAll;
 
 [BepInPlugin(Guid, "Unpack All", Version)]
-[BepInDependency(OptionalLive.ToolkitGuid, OptionalLive.ToolkitVersion)]
+[BepInDependency(ToolkitGuid, ToolkitVersion)]
 public sealed class Plugin : BasePlugin
 {
     private const string Guid = "com.dev.survivallog.unpackall";
-    private const string Version = "0.9.0";
+    private const string Version = "0.9.1";
+
+    /// <summary>Exiled's Toolkit: its shared helpers, the Mods menu, toasts and live settings all come from it.</summary>
+    private const string ToolkitGuid = "com.dev.survivallog.exiledtoolkit";
+    private const string ToolkitVersion = ">=0.19.0";
+
+    private const string LogFileName = "unpack-all.log";
 
     public override void Load()
     {
         var unpackKey = Config.Bind("Controls", "UnpackKey", Enum.Parse<KeyCode>(KeyGate.DefaultKeyName), Settings.UnpackKey);
         var includeStorages = Config.Bind("Unpack", "IncludeStorages", false, Settings.IncludeStorages);
         var craftedToDoor = Config.Bind("Furniture", "CraftedToDoor", true, Settings.CraftedToDoor);
-        var log = new UnpackLog(Log, Path.Combine(Paths.BepInExRootPath, "unpack-all.log"));
-        var harmony = new Harmony(Guid);
-        var game = new GamePackages(log.Write, log.Detail);
-        var session = new UnpackSession(game, new GamePickUp(log.Write), new WebPage(log.Write), log.Write, log.Detail);
+        var log = new ModLog(Log, LogFileName);
+        var hooks = new PatchKit(new Harmony(Guid), log.Write);
+        var game = new GamePackages(log.Write, log.WriteFileOnly);
+        var session = new UnpackSession(game, new GamePickUp(log.Write), new WebPage(log.Write), log.Write, log.WriteFileOnly);
 
         log.Write($"===== Unpack All {Version} started");
-        PageMessages.Apply(harmony, log.Write);
-        CraftedDelivery.Apply(harmony, log.Write, log.Detail);
-        MenuOpening.Apply(harmony, session.MenuOpened, log.Write);
-        OptionalLive.Watch(unpackKey, key =>
+        CraftedDelivery.Apply(hooks, log.WriteFileOnly);
+        MenuOpening.Apply(hooks, session.MenuOpened);
+        LiveSettings.Watch(unpackKey, key =>
         {
             session.UseKey(key);
             log.Write($"unpack key {key}");
         });
-        OptionalLive.Watch(includeStorages, isOn =>
+        LiveSettings.Watch(includeStorages, isOn =>
         {
             game.IncludeStorages = isOn;
             log.Write($"storages {(isOn ? "on" : "off")}");
         });
-        OptionalLive.Watch(craftedToDoor, isOn =>
+        LiveSettings.Watch(craftedToDoor, isOn =>
         {
             CraftedDelivery.IsOn = isOn;
             log.Write($"crafted furniture to the entryway {(isOn ? "on" : "off")}");
         });
         UnpackTicker.Session = session;
         UnpackTicker.Log = log.Write;
-        UnpackTicker.Quit = log.Finish;
         AddComponent<UnpackTicker>();
         StartWarmUp();
     }

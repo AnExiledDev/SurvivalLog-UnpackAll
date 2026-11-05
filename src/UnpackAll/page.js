@@ -1,7 +1,7 @@
 // Unpack All's web half. Runs in Root.html, the document every game page iframe sits in. Puts "Pick up" in the game's
 // click menu on a furniture package in the yard; "Unpack all" in the inventory's Mods menu comes from Exiled's Toolkit.
-// The plugin shows the result of a press as an Exiled's Toolkit toast. Talks to the plugin through vuplex.postMessage("slmod|unpackall|<verb>") and is
-// driven by window.__slunpackall.
+// The plugin shows the result of a press as an Exiled's Toolkit toast. Talks to the plugin through Exiled's Toolkit's
+// page API ("slmod|unpackall|<verb>") and is driven by window.__slunpackall.
 (function () {
   if (window.__slunpackall) return;
 
@@ -10,11 +10,17 @@
 
   var isBusy = false;
   var busyTimer = 0;
+  var etk = null;
+  var menuWatch = null;
 
+  // Through the Toolkit's bridge. Nothing goes before its page API is there; the page says it is ready once it is.
   function send(message) {
-    try {
-      if (window.vuplex) window.vuplex.postMessage(PREFIX + message);
-    } catch (e) {}
+    if (etk) etk.send(PREFIX, message);
+  }
+
+  // Runs fn with the Toolkit's page API: at once when its script ran first, else when it runs.
+  function withToolkit(fn) {
+    (window.ExiledToolkitReady = window.ExiledToolkitReady || []).push(fn);
   }
 
   // One press at a time: a double click would otherwise ask twice. Every press is answered by the plugin, which
@@ -50,46 +56,14 @@
   // reason it is greyed out, shown in the menu's own hover tip in place of the usual tip.
   var pick = { why: null, label: 'Pick up', tip: '' };
 
-  // The root's iframes, kept up to date by the browser, so a check never has to search the root document for them.
-  var frames = document.getElementsByTagName('iframe');
-
   function pickMenu(why, label, tip) {
     pick = { why: why == null ? null : String(why), label: label || 'Pick up', tip: tip || '' };
-    patchMenusSafely();
+    refreshMenus();
   }
 
-  // Whether an iframe shows the click menu, worked out again only when its address changes.
-  function isMenuFrame(frame) {
-    var src = frame.src || '';
-
-    if (frame.uaSrc !== src) {
-      frame.uaSrc = src;
-      frame.uaIsMenu = MENU_PAGE.test(src);
-    }
-
-    return frame.uaIsMenu;
-  }
-
-  function patchMenus() {
-    for (var i = 0; i < frames.length; i++) {
-      var frame = frames.item(i);
-
-      if (!isMenuFrame(frame)) continue;
-
-      var doc = null;
-
-      try {
-        doc = frame.contentDocument;
-      } catch (e) {}
-
-      if (doc) patchMenu(doc);
-    }
-  }
-
-  function patchMenusSafely() {
-    try {
-      patchMenus();
-    } catch (e) {}
+  // What the entry is drawn from changed, or a new menu page appeared: patch it now rather than at the next check.
+  function refreshMenus() {
+    if (menuWatch) menuWatch.refresh();
   }
 
   // Shown last in the menu's main column while it is open on a yard package. The press names no package: the plugin
@@ -176,36 +150,40 @@
     return node;
   }
 
-  // A click menu in a new iframe is watched as soon as the iframe appears and again when it loads, not at the next
-  // poll, so the watcher is in place before the game draws the menu's entries. Any change in the root lands here, so
-  // the check walks the kept list of iframes and searches nothing.
+  // A click menu in a new iframe is watched as soon as the iframe appears and again when it loads, not at the
+  // Toolkit's next check, so the watcher is in place before the game draws the menu's entries. Any change in the root
+  // lands here, so the check walks the browser's kept list of iframes and searches nothing.
   function watchForFrames() {
     if (typeof MutationObserver === 'undefined') return;
 
     new MutationObserver(function () {
+      var frames = document.getElementsByTagName('iframe');
       var isNew = false;
 
       for (var i = 0; i < frames.length; i++) {
-        var frame = frames.item(i);
+        var frame = frames[i];
 
         if (frame.uaLoadWatched) continue;
 
         frame.uaLoadWatched = true;
-        frame.addEventListener('load', patchMenusSafely);
+        frame.addEventListener('load', refreshMenus);
         isNew = true;
       }
 
-      if (isNew) patchMenusSafely();
+      if (isNew) refreshMenus();
     }).observe(document.body, { childList: true, subtree: true });
   }
 
-  watchForFrames();
-
-  // Polled because the game creates and drops its pages whenever it likes, and Vue drops the button on a re-render.
-  setInterval(function () {
-    patchMenusSafely();
-  }, 400);
+  // Runs once the Toolkit's page API is there. The game creates and drops its pages whenever it likes, and Vue drops
+  // the entry on a re-render, so the click menu is handed over at every check; the patch returns at once when the
+  // entry is still in place.
+  function startWithToolkit(api) {
+    etk = api;
+    menuWatch = etk.watchPages(MENU_PAGE, patchMenu, { everyCheck: true });
+    watchForFrames();
+    send('ready');
+  }
 
   window.__slunpackall = { answered: answered, pickMenu: pickMenu };
-  send('ready');
+  withToolkit(startWithToolkit);
 })();
