@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.2
+
+- Sending crafted furniture straight to the entryway (`CraftedToDoor`) is now off for a new install, since it moves your things without a click. Turn it on in the config or on the Mod Manager's Mods screen. A setting you already saved is kept.
+- Made for Survival Log 1.1.20719.
+
 ## 0.9.1
 
 - Now uses Exiled's Toolkit for its shared parts, so it needs Exiled's Toolkit 0.19.0 or newer.

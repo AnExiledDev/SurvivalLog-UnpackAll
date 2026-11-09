@@ -1,5 +1,5 @@
 Name: Unpack All
-Summary: Unpack every furniture package in your bag and on the floor at home with one click, never more than your home has free spots for, and send crafted furniture straight to the entryway. It can also pull packages out of your storages if you turn that on. Uses the game's own Use action and waits behind the orders you already queued.
+Summary: Unpack every furniture package in your bag and on the floor at home with one click, never more than your home has free spots for. Turn on the options to also pull packages out of your storages or send crafted furniture straight to the entryway. Uses the game's own Use action and waits behind the orders you already queued.
 
 Description (BBCode):
 [center][img]https://sldb.core-directive.com/media/save/1-save-safe.png[/img][/center]
@@ -13,7 +13,7 @@ Unpacking furniture packages one at a time is slow, and lining up too many fills
 [*][b]Game's own Use action[/b]: the same action as the inventory's Use button, with the game's checks and timings.[/*]
 [*][b]Your queued actions stay[/b]: unpacks join the end of the queue, so your own actions run first.[/*]
 [*][b]Clear messages[/b]: says how many are unpacking, how many were picked up or taken from storages, and why any were left.[/*]
-[*][b]Crafted furniture to the entryway[/b]: furniture you craft at a workbench goes straight to the entryway, as if you had clicked Unpack to Entryway. A package an open Aid Platform commission asks for stays a package, and when the entryway is full the rest stay in your bag. You can turn this off in the config.[/*]
+[*][b]Crafted furniture to the entryway[/b]: turn it on and furniture you craft at a workbench goes straight to the entryway, as if you had clicked Unpack to Entryway. A package an open Aid Platform commission asks for stays a package, and when the entryway is full the rest stay in your bag. It starts off, since it moves your things without a click.[/*]
 [*][b]Pick up yard packages[/b]: click a furniture package in the yard and choose Pick up to put it back in your bag, for example to hand it in for an Aid Platform commission. If your bag can't carry it, it goes into a shopping bag in the living room. If neither has room, the package stays in the yard. A bought package can no longer be returned to the shop after you pick it up.[/*]
 [*][b]Mods menu[/b]: a Mods button on the inventory toolbar, and in the bag panel of most station screens, with an Unpack all entry, shared with other mods that use it.[/*]
 [/list]
@@ -59,7 +59,7 @@ The mod adds no data of its own to your save, but the unpacks are real: packages
 Delete [font=Courier New]UnpackAll.dll[/font] from the [font=Courier New]BepInEx\plugins[/font] folder.
 
 [size=5]Configuration[/size]
-To set a key, turn storages on or turn crafted furniture to the entryway off, edit [font=Courier New]BepInEx\config\com.dev.survivallog.unpackall.cfg[/font] while the game is closed, or do it in game on the Mod Manager's Mods screen, where changes take effect at once (see [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll/blob/main/CONFIG.md]CONFIG.md[/url]; the cfg file explains each setting in English and Chinese).
+To set a key, or turn storages or crafted furniture to the entryway on, edit [font=Courier New]BepInEx\config\com.dev.survivallog.unpackall.cfg[/font] while the game is closed, or do it in game on the Mod Manager's Mods screen, where changes take effect at once (see [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll/blob/main/CONFIG.md]CONFIG.md[/url]; the cfg file explains each setting in English and Chinese).
 
 [size=5]Feedback[/size]
 Found a bug or have an idea? Come say hi on the [url=https://discord.gg/trTsyxUFqg]Core Directive Discord[/url], or post in this page's Posts tab. For bugs, please include [font=Courier New]BepInEx\LogOutput.log[/font] and [font=Courier New]BepInEx\unpack-all.log[/font].
@@ -80,7 +80,7 @@ Open source under MIT: [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll
 [*][b]游戏自己的使用动作[/b]：和背包界面「使用」按钮相同的动作，遵循游戏自己的检查和时间。[/*]
 [*][b]保留你排好的行动[/b]：拆封加在队列末尾，你自己排的行动先执行。[/*]
 [*][b]清楚的提示[/b]：告诉你正在拆封多少个、从地上捡起或从储物家具取出多少个，以及剩下的为什么没拆。[/*]
-[*][b]做好的家具送到玄关[/b]：在工作台做好的家具会直接送到玄关，和点「拆到玄关」一样。援助平台上未完成的委托需要的包裹会保留为包裹；玄关放满后，其余的留在背包里。可以在配置中关闭。[/*]
+[*][b]做好的家具送到玄关[/b]：开启后，在工作台做好的家具会直接送到玄关，和点「拆到玄关」一样。援助平台上未完成的委托需要的包裹会保留为包裹；玄关放满后，其余的留在背包里。默认关闭，因为它会在你没有点击时移动你的物品。[/*]
 [*][b]拿起院子里的包裹[/b]：点击屋外空地上的家具包裹，选择「拿起」，就能把它放回背包，比如拿去交援助平台的委托。背包装不下时，会放进客厅的购物袋；两边都没有地方时，包裹留在原地。买来的包裹拿起后就不能再退货了。[/*]
 [*][b]Mods 菜单[/b]：背包工具栏上，以及大部分设施界面背包栏里的 Mods 按钮，里面有「全部拆封」一项，和其他使用同一菜单的模组共用。[/*]
 [/list]

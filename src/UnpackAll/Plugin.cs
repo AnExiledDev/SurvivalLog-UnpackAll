@@ -17,7 +17,7 @@ namespace UnpackAll;
 public sealed class Plugin : BasePlugin
 {
     private const string Guid = "com.dev.survivallog.unpackall";
-    private const string Version = "0.9.1";
+    private const string Version = "0.9.2";
 
     /// <summary>Exiled's Toolkit: its shared helpers, the Mods menu, toasts and live settings all come from it.</summary>
     private const string ToolkitGuid = "com.dev.survivallog.exiledtoolkit";
@@ -29,7 +29,7 @@ public sealed class Plugin : BasePlugin
     {
         var unpackKey = Config.Bind("Controls", "UnpackKey", Enum.Parse<KeyCode>(KeyGate.DefaultKeyName), Settings.UnpackKey);
         var includeStorages = Config.Bind("Unpack", "IncludeStorages", false, Settings.IncludeStorages);
-        var craftedToDoor = Config.Bind("Furniture", "CraftedToDoor", true, Settings.CraftedToDoor);
+        var craftedToDoor = Config.Bind("Furniture", "CraftedToDoor", false, Settings.CraftedToDoor);
         var log = new ModLog(Log, LogFileName);
         var hooks = new PatchKit(new Harmony(Guid), log.Write);
         var game = new GamePackages(log.Write, log.WriteFileOnly);
