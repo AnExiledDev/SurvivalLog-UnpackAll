@@ -1,5 +1,5 @@
 Name: Unpack All
-Summary: Unpack every furniture package in your bag and on the floor at home with one click, never more than your home has free spots for. Turn on the options to also pull packages out of your storages or send crafted furniture straight to the entryway. Uses the game's own Use action and waits behind the orders you already queued.
+Summary: Unpack every furniture package in your bag and on the floor at home with one click, never more than your home has free spots for. Turn on the options to also pull packages out of your storages or send crafted furniture straight to the entryway. Uses the game's Use action and waits behind the orders you already queued.
 
 Description (BBCode):
 [center][img]https://sldb.core-directive.com/media/save/1-save-safe.png[/img][/center]
@@ -10,7 +10,7 @@ Unpacking furniture packages one at a time is slow, and lining up too many fills
 [list]
 [*][b]Bag first, then the floor, then storages[/b]: packages on the floor at home are picked up, then, if you turn it on in the config, packages in the storages at home you can see are taken out, and unpacked while spots are left. Storages are off by default.[/*]
 [*][b]Never more than fits[/b]: only as many unpacks as your home has free package spots. The rest stay where they are.[/*]
-[*][b]Game's own Use action[/b]: the same action as the inventory's Use button, with the game's checks and timings.[/*]
+[*][b]Game's Use action[/b]: the same action as the inventory's Use button, with the game's checks and timings.[/*]
 [*][b]Your queued actions stay[/b]: unpacks join the end of the queue, so your own actions run first.[/*]
 [*][b]Clear messages[/b]: says how many are unpacking, how many were picked up or taken from storages, and why any were left.[/*]
 [*][b]Crafted furniture to the entryway[/b]: turn it on and furniture you craft at a workbench goes straight to the entryway, as if you had clicked Unpack to Entryway. A package an open Aid Platform commission asks for stays a package, and when the entryway is full the rest stay in your bag. It starts off, since it moves your things without a click.[/*]
@@ -31,7 +31,7 @@ The mod adds no data of its own to your save, but the unpacks are real: packages
 [*]Floor and storage packages are only taken while you are at home, and nothing leaves a storage while a storage, workbench or shop window is open.[/*]
 [*]Locked storages, the drone hub and drones, the neighbour gift basket, the door box and workstation bins are never touched.[/*]
 [*]The game picks up a floor stack whole, so some packages can end up waiting in your bag for the next press. A storage stack bigger than your free spots stays in its storage.[/*]
-[*]The game's own refusal reasons are shown as the game words them, which can be Chinese.[/*]
+[*]The game's refusal reasons are shown as the game words them, which can be Chinese.[/*]
 [*]The shared Mods button and its tooltip stay in English.[/*]
 [/list]
 

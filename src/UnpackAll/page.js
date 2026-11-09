@@ -114,7 +114,7 @@
     }).observe(doc.body, { childList: true, subtree: true });
   }
 
-  // The game's own entry markup, so its stylesheet draws it and its hover tip like the rest.
+  // The game's entry markup, so its stylesheet draws it and its hover tip like the rest.
   function pickEntry(doc, key) {
     var why = pick.why;
     var node = doc.createElement('div');

@@ -9,7 +9,7 @@ namespace UnpackAll.Adapters;
 /// <summary>
 /// Sends crafted furniture packages to the entryway as soon as the workbench makes them. ToolTableManager.TryCreateItem
 /// collects a craft's new packages with the static CollectNewItemIds into the result window's list; the hook runs after
-/// that, hands the chosen ids to the game's own UnpackPackagesToEntrance (what the result window's 「拆到玄关」 button
+/// that, hands the chosen ids to the game's UnpackPackagesToEntrance (what the result window's 「拆到玄关」 button
 /// calls) and takes the delivered ones off the list, so the window offers its button only for what is left. The
 /// target's first 15 bytes are three register saves to the stack, with no relative jump or call. Static because a
 /// Harmony postfix has nowhere else to look; it runs on the game's main thread.
@@ -120,7 +120,7 @@ internal static class CraftedDelivery
 
     /// <summary>
     /// Whether an open Aid Platform commission still asks for this package. The game keeps no quest mark on an item,
-    /// so this reads the commissions themselves and matches with the game's own check, which also counts dyed and
+    /// so this reads the commissions themselves and matches with the game's check, which also counts dyed and
     /// undyed versions of the same furniture.
     /// </summary>
     private static bool IsWantedByCommission(int itemConfigId)

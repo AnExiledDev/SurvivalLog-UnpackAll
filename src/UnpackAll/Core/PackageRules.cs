@@ -3,7 +3,7 @@ using System;
 namespace UnpackAll.Core;
 
 /// <summary>
-/// The game's own tests for what a package is and how many it will unpack, copied from the unpack effect
+/// The game's tests for what a package is and how many it will unpack, copied from the unpack effect
 /// (AE_GenerateBagFurniture.Run) and the use check (ItemManager.VerifyItemUse) so the mod never asks for an unpack the
 /// game would refuse.
 /// </summary>

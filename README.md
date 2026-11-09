@@ -8,9 +8,9 @@ Unpacking furniture packages one at a time is slow, and lining up more unpacks t
 
 - **Bag first, then the floor, then storages**: packages in your bag are unpacked first. If spots are left over, packages on the floor inside your home are picked up into your bag and unpacked as well. If spots are still left after that and `IncludeStorages` is on, packages in the storages at home you can see are moved into your bag and unpacked, as long as their stack fits the spots left. This last step is off until you turn it on in the config.
 - **Never more than fits**: only as many unpacks are lined up as your home has free package spots, so every one of them can run and the queue bar never fills with unpacks that would fail. The rest stay where they are.
-- **The game's own Use action**: each unpack is the same action the inventory's Use button lines up, so the game's own checks and timings apply. Like the Use button, it sends your character to the package point nearest them first.
+- **The game's Use action**: each unpack is the same action the inventory's Use button lines up, so the game's checks and timings apply. Like the Use button, it sends your character to the package point nearest them first.
 - **Your queued actions stay**: unpacks join the end of your character's action queue, so actions you queued yourself run first.
-- **Clear messages**: a short message at the bottom of the screen says how many packages are unpacking, how many were picked up from the floor or taken from storages (and how many of those wait in your bag), and how many were left and why: no free package spot, a storage stack bigger than your free spots, your bag could not carry it, you are away from home, a window is open (or could not be checked), or the game's own reason for refusing.
+- **Clear messages**: a short message at the bottom of the screen says how many packages are unpacking, how many were picked up from the floor or taken from storages (and how many of those wait in your bag), and how many were left and why: no free package spot, a storage stack bigger than your free spots, your bag could not carry it, you are away from home, a window is open (or could not be checked), or the game's reason for refusing.
 - **Follows up**: after starting, the mod checks that the unpacks really reached your character's queue and watches them until they are done. An unpack the game drops is never counted as unpacking: the message says how many were dropped, and a later message says so if an unpack ends without opening its package.
 - **Crafted furniture to the entryway**: turn on `CraftedToDoor` and furniture packages you craft at a workbench go straight to the entryway, as if you had clicked the result window's Unpack to Entryway button. A package that an open Aid Platform commission asks for stays a package so you can hand it in, and when the entryway is full the rest stay packages in your bag (the result window still offers its button for them). A short message says how many were sent. It starts off, since it moves your things without a click.
 - **Pick up yard packages**: click a furniture package in the yard and choose **Pick up** to put it back in your bag, for example to hand it in for an Aid Platform commission. If your bag can't carry it, it goes into a shopping bag in the living room. A bought package can no longer be returned to the shop after you pick it up.
@@ -25,11 +25,11 @@ No key is set by default: **Unpack all** in the Mods menu does the unpacking. To
 
 ## The Mods menu
 
-The mod adds a **Mods** button (a four-square icon) to the toolbar on the bag side of the inventory screen, between the game's discard and sort buttons. Click it to open a small menu with **Unpack all**, which starts an unpack (and shows the unpack key next to it, if you set one). Esc or a click anywhere else closes the menu, and the game's own hotkeys are held back while it is open so Esc closes only the menu.
+The mod adds a **Mods** button (a four-square icon) to the toolbar on the bag side of the inventory screen, between the game's discard and sort buttons. Click it to open a small menu with **Unpack all**, which starts an unpack (and shows the unpack key next to it, if you set one). Esc or a click anywhere else closes the menu, and the game's hotkeys are held back while it is open so Esc closes only the menu.
 
 On the inventory the Unpack all entry only shows on the bag's item tab, and not in the prologue. The same Mods button is also in the bag panel of the workbench, stove, ration press, greenhouse, drone hub, brewing barrel, dye vat, rat cage, material rack and shop screens (not the shredder or the drone trade); there it unpacks only what is in your bag, since the floor and storages are left alone while a station screen is open. Other mods that use the same Mods menu list their own entries in it, so you get one button instead of one per mod; when no mod has an entry to show, the button is taken away.
 
-The Unpack all entry, its tooltip and the messages follow the game's language, English or Simplified Chinese, and switch within a second when you change it. The shared Mods button and its tooltip stay in English. The game's own refusal reasons are shown as the game words them.
+The Unpack all entry, its tooltip and the messages follow the game's language, English or Simplified Chinese, and switch within a second when you change it. The shared Mods button and its tooltip stay in English. The game's refusal reasons are shown as the game words them.
 
 ## How it works
 
@@ -43,7 +43,7 @@ While unpacks from an earlier press are still lined up, another press does nothi
 
 ## Crafted furniture
 
-When a craft at a workbench makes furniture packages, the mod hands them to the game's own Unpack to Entryway, the same as the result window's button, as many as the entryway has free spots for. The game keeps no quest mark on a package, so the mod checks the Aid Platform commissions that are not finished: a package one of them still asks for (dyed or not) stays a package. Stranger requests and casual orders are not checked; turn `CraftedToDoor` off if you craft furniture for those.
+When a craft at a workbench makes furniture packages, the mod hands them to the game's Unpack to Entryway, the same as the result window's button, as many as the entryway has free spots for. The game keeps no quest mark on a package, so the mod checks the Aid Platform commissions that are not finished: a package one of them still asks for (dyed or not) stays a package. Stranger requests and casual orders are not checked; turn `CraftedToDoor` off if you craft furniture for those.
 
 ## Pick up
 

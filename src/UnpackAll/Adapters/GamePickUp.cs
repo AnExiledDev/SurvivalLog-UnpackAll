@@ -9,7 +9,7 @@ using UnpackAll.Core;
 namespace UnpackAll.Adapters;
 
 /// <summary>
-/// The game's side of a Pick up press. The item is made with the game's own ItemManager.TryAddItemToBag, the call the
+/// The game's side of a Pick up press. The item is made with the game's ItemManager.TryAddItemToBag, the call the
 /// game uses to give an item back (RenovationManager.RefundRetiredUnit), which checks the bag's room and carry weight
 /// and drops nothing on the floor when it refuses. A full bag sends it to the living room's shopping bags, which the
 /// game makes on demand. The yard package is then removed the way BagFurniture.Dismantle removes it, without the

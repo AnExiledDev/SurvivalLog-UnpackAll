@@ -7,7 +7,7 @@ using ToolkitPage = ExiledToolkit.Web.WebPage;
 namespace UnpackAll.Adapters;
 
 /// <summary>
-/// The mod's half that lives in the game's web UI: page.js, run in the root document the game's own pages sit in. It
+/// The mod's half that lives in the game's web UI: page.js, run in the root document the game's pages sit in. It
 /// puts Pick up in the game's click menu; Unpack all in the inventory toolbar's Mods menu comes from Exiled's Toolkit.
 /// The result of a press is an Exiled's Toolkit toast. The web view can reload at any time and lose the script, so
 /// Exiled's Toolkit checks for it every couple of seconds and the session puts it back when the page says it is

@@ -16,7 +16,7 @@ public static class OutcomeMessage
     /// <summary>Western and full-width (Chinese) full stop, exclamation and question marks, then whitespace.</summary>
     private static readonly char[] ClosingPunctuation = { '.', '!', '?', '。', '！', '？', ' ', '\t', '\r', '\n' };
 
-    /// <summary>Unity rich-text tags such as &lt;color=#f55&gt;, &lt;/b&gt; or &lt;#ff0000&gt;, which the game's own UI renders but a toast would print.</summary>
+    /// <summary>Unity rich-text tags such as &lt;color=#f55&gt;, &lt;/b&gt; or &lt;#ff0000&gt;, which the game's UI renders but a toast would print.</summary>
     private static readonly Regex RichTextTag = new("</?[A-Za-z][^<>]*>|<#[0-9A-Fa-f]{3,8}>", RegexOptions.CultureInvariant);
 
     /// <summary>The toast for a press, or null when the press should pass without a word.</summary>

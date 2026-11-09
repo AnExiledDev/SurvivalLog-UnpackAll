@@ -13,7 +13,7 @@ using UnpackAll.Core;
 namespace UnpackAll.Adapters;
 
 /// <summary>
-/// The game's side of an unpack press. Every call goes through the game's own logic layer (the bag, the floor pickup,
+/// The game's side of an unpack press. Every call goes through the game's logic layer (the bag, the floor pickup,
 /// the storage quick move, the use check and the action queue the inventory's Use button feeds), never through the UI's
 /// copy of it. The UI is only read, to see which windows are open. Each call fails soft: an exception is logged once
 /// per kind of call and answered as a refusal.
@@ -88,7 +88,7 @@ internal sealed class GamePackages : IPackageGame
             var remaining = left == null || !left.HasItem ? 0 : left.Item.ItemCount;
             var taken = Math.Max(0, floorPackage.Count - remaining);
 
-            // The floor is the truth: the game's own answer is only logged when it disagrees, since its meaning is not documented.
+            // The floor is the truth: the game's answer is only logged when it disagrees, since its meaning is not documented.
             if (taken != picked || (!isAccepted && taken != 0)) _log($"PICKUP MISMATCH floor package {floorPackage.ItemId}: taken {taken}, picked {picked}, accepted {isAccepted}");
 
             _detail($"picked up floor package {floorPackage.ItemId} (config {floorPackage.ConfigId}): {taken} of {floorPackage.Count}");
@@ -104,7 +104,7 @@ internal sealed class GamePackages : IPackageGame
     }
 
     /// <summary>
-    /// The game's own quick move of a whole stack into the bag (ItemManager.TryQuickMoveItem, silent, no mold check),
+    /// The game's quick move of a whole stack into the bag (ItemManager.TryQuickMoveItem, silent, no mold check),
     /// the move a click on a stack does with the storage open. It weighs the whole stack before moving anything, and
     /// moves each unit out of the storage and into the bag in one step, so a refusal partway leaves every unit in one
     /// place or the other. The storage is the truth: what left it is what is counted.
@@ -179,7 +179,7 @@ internal sealed class GamePackages : IPackageGame
         }
     }
 
-    /// <summary>The game's own check behind the Use button, which answers with the line it would have shown the player.</summary>
+    /// <summary>The game's check behind the Use button, which answers with the line it would have shown the player.</summary>
     public Phrase? WhyUnusable(Package package)
     {
         try
@@ -268,7 +268,7 @@ internal sealed class GamePackages : IPackageGame
         }
     }
 
-    /// <summary>The game's own count of item uses with the character, summed over the packages' kinds, logged with what the queue holds.</summary>
+    /// <summary>The game's count of item uses with the character, summed over the packages' kinds, logged with what the queue holds.</summary>
     public int? UsesInQueue(IReadOnlyList<Package> packages)
     {
         try
@@ -416,7 +416,7 @@ internal sealed class GamePackages : IPackageGame
     }
 
     /// <summary>
-    /// False in the prologue, before the disaster. This is the game's own test (SceneRatManager.IsPostDisaster reads
+    /// False in the prologue, before the disaster. This is the game's test (SceneRatManager.IsPostDisaster reads
     /// the same field), done here without the game's singleton lookup.
     /// </summary>
     internal static bool IsAfterDisaster(BattleLogicWorld world) => world._GameTimeManager?.WorldStateType == WorldStateType.PostDisaster;
@@ -497,7 +497,7 @@ internal sealed class GamePackages : IPackageGame
     private static bool IsSameDrop(DropItem? found, DropItem drop) => found != null && found.Pointer == drop.Pointer;
 
     /// <summary>
-    /// Packages in the home's storages: every visible furniture with a bag on the home map, as the game's own list
+    /// Packages in the home's storages: every visible furniture with a bag on the home map, as the game's list
     /// gives them (AgentManager.GetFurnituresWithBag), less the ones the cost pool leaves out (locked storages and the
     /// bins of a brew barrel, shredder, compressor, dye vat or greenhouse), the drone hub and drones, whose bags hold
     /// trade cargo, and the neighbour gift basket and the door box, which the game treats apart. A storage that cannot

@@ -64,7 +64,7 @@ internal sealed class UnpackSession
     }
 
     /// <summary>
-    /// Called by the game's own menu-open call, before the game sends the menu to the web view, so the page knows
+    /// Called by the game's menu-open call, before the game sends the menu to the web view, so the page knows
     /// whether to add Pick up by the time the menu's entries are drawn.
     /// </summary>
     public void MenuOpened(long id)

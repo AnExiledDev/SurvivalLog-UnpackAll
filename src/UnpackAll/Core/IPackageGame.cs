@@ -11,11 +11,11 @@ public interface IPackageGame
 {
     PackageRead Read();
 
-    /// <summary>The game's own floor pickup into the bag. How many of the drop's packages left the floor, 0 when refused.</summary>
+    /// <summary>The game's floor pickup into the bag. How many of the drop's packages left the floor, 0 when refused.</summary>
     int PickUp(Package floorPackage);
 
     /// <summary>
-    /// The game's own quick move of a whole stack from its storage into the bag, as a click with the storage open does.
+    /// The game's quick move of a whole stack from its storage into the bag, as a click with the storage open does.
     /// How many of the stack's packages left the storage, 0 when refused.
     /// </summary>
     int TakeFromStorage(Package storagePackage);

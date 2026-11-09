@@ -157,7 +157,7 @@ internal sealed class FakeGame : IPackageGame
 
     public Phrase? WhyUnusable(Package package) => Refusals.TryGetValue(package.ItemId, out var reason) ? Phrase.FromGame(reason) : null;
 
-    /// <summary>Like the game's own queue, this takes any use it is handed, whatever the bag holds.</summary>
+    /// <summary>Like the game's queue, this takes any use it is handed, whatever the bag holds.</summary>
     public bool TryQueue(Package package)
     {
         if (RefusesToQueue) return false;
@@ -181,7 +181,7 @@ internal sealed class FakeGame : IPackageGame
         return true;
     }
 
-    /// <summary>Like the game's own count, this sees only what reached the character's queue, never the unstarted line.</summary>
+    /// <summary>Like the game's count, this sees only what reached the character's queue, never the unstarted line.</summary>
     public int? UsesInQueue(IReadOnlyList<Package> packages) => Unpacking.Count(id => packages.Any(package => package.ItemId == id));
 
     private QueueOnStart WhatStartDoes()
