@@ -17,7 +17,7 @@ namespace UnpackAll;
 public sealed class Plugin : BasePlugin
 {
     private const string Guid = "com.dev.survivallog.unpackall";
-    private const string Version = "0.9.2";
+    private const string Version = "0.9.3";
 
     /// <summary>Exiled's Toolkit: its shared helpers, the Mods menu, toasts and live settings all come from it.</summary>
     private const string ToolkitGuid = "com.dev.survivallog.exiledtoolkit";

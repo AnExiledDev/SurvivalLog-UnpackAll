@@ -11,15 +11,15 @@ public class OutcomeMessageTests
     {
         var outcome = Done(queued: 3, pickedUp: 1, noSpot: 2);
 
-        Assert.Equal("Unpacking 3 packages. Picked up 1 from the floor. 2 left: no free package spot at home.", OutcomeMessage.Describe(outcome));
+        Assert.Equal("Unpacking 3 packages. Picked up 1 from the floor. 2 left because your home has no free package spots.", OutcomeMessage.Describe(outcome));
     }
 
     [Fact]
     public void One_package_reads_in_the_singular()
     {
         Assert.Equal("Unpacking 1 package.", OutcomeMessage.Describe(Done(queued: 1)));
-        Assert.Equal("Nothing unpacked. 1 left on the floor: your bag could not carry it.", OutcomeMessage.Describe(Done(floorRefused: 1)));
-        Assert.Equal("Nothing unpacked. 1 on the floor at home: go home to pick it up.", OutcomeMessage.Describe(Done(floorAway: 1)));
+        Assert.Equal("Nothing unpacked. 1 left on the floor because your bag can't carry it.", OutcomeMessage.Describe(Done(floorRefused: 1)));
+        Assert.Equal("Nothing unpacked. 1 is on the floor at home. Go home to pick it up.", OutcomeMessage.Describe(Done(floorAway: 1)));
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public class OutcomeMessageTests
         var outcome = Done(noSpot: 1, floorRefused: 2, floorAway: 3, unusable: 4, unusableReason: "Not while fighting");
 
         Assert.Equal(
-            "Nothing unpacked. 1 left: no free package spot at home. 2 left on the floor: your bag could not carry them. 3 on the floor at home: go home to pick them up. 4 can't be unpacked right now: Not while fighting.",
+            "Nothing unpacked. 1 left because your home has no free package spots. 2 left on the floor because your bag can't carry them. 3 are on the floor at home. Go home to pick them up. 4 can't be unpacked right now: Not while fighting.",
             OutcomeMessage.Describe(outcome));
     }
 
@@ -81,14 +81,14 @@ public class OutcomeMessageTests
     {
         var outcome = Done(queued: 1, pickedUp: 5, waitingInBag: 4, noSpot: 2);
 
-        Assert.Equal("Unpacking 1 package. Picked up 5 from the floor, 4 waiting in your bag. 2 left: no free package spot at home.", OutcomeMessage.Describe(outcome));
+        Assert.Equal("Unpacking 1 package. Picked up 5 from the floor. 4 are waiting in your bag. 2 left because your home has no free package spots.", OutcomeMessage.Describe(outcome));
     }
 
     [Fact]
     public void A_start_that_failed_after_a_pickup_says_where_the_picked_up_packages_are()
     {
         Assert.Equal(
-            "Could not start unpacking, see BepInEx/unpack-all.log. Picked up 2 from the floor, 2 waiting in your bag.",
+            "Could not start unpacking, see BepInEx/unpack-all.log. Picked up 2 from the floor. 2 are waiting in your bag.",
             OutcomeMessage.Describe(new UnpackOutcome.StartFailed(3, 2)));
     }
 
@@ -96,9 +96,9 @@ public class OutcomeMessageTests
     public void Packages_taken_from_storages_say_where_they_came_from_and_how_many_wait_in_the_bag()
     {
         Assert.Equal("Unpacking 2 packages. Took 2 from storages.", OutcomeMessage.Describe(Done(queued: 2, fromStorage: 2)));
-        Assert.Equal("Unpacking 1 package. Took 3 from storages, 2 waiting in your bag.", OutcomeMessage.Describe(Done(queued: 1, fromStorage: 3, waitingInBag: 2)));
+        Assert.Equal("Unpacking 1 package. Took 3 from storages. 2 are waiting in your bag.", OutcomeMessage.Describe(Done(queued: 1, fromStorage: 3, waitingInBag: 2)));
         Assert.Equal(
-            "Unpacking 2 packages. Picked up 1 from the floor and took 2 from storages, 1 waiting in your bag.",
+            "Unpacking 2 packages. Picked up 1 from the floor and took 2 from storages. 1 is waiting in your bag.",
             OutcomeMessage.Describe(Done(queued: 2, pickedUp: 1, fromStorage: 2, waitingInBag: 1)));
     }
 
@@ -108,8 +108,8 @@ public class OutcomeMessageTests
         var outcome = Done(storageRefused: 1, storageAway: 2, storageBehindPanel: 3, storageUnchecked: 4, storageTooBig: 5);
 
         Assert.Equal(
-            "Nothing unpacked. 1 left in storages: your bag could not carry it. 2 in storages at home: go home to unpack them. 3 left in storages: close the open window and press again. "
-            + "4 left in storages: could not check for open windows, see BepInEx/unpack-all.log. 5 left in storages: a stack is bigger than the free package spots.",
+            "Nothing unpacked. 1 left in storages because your bag can't carry it. 2 are in storages at home. Go home to unpack them. 3 left in storages because a window is open. Close it and press again. "
+            + "4 left in storages because the mod could not check for open windows, see BepInEx/unpack-all.log. 5 left in storages because the stack is bigger than your free package spots.",
             OutcomeMessage.Describe(outcome));
     }
 
@@ -117,10 +117,10 @@ public class OutcomeMessageTests
     public void A_start_that_failed_after_moves_from_storages_says_the_packages_are_in_the_bag()
     {
         Assert.Equal(
-            "Could not start unpacking, see BepInEx/unpack-all.log. Took 1 from storages, 1 waiting in your bag.",
+            "Could not start unpacking, see BepInEx/unpack-all.log. Took 1 from storages. 1 is waiting in your bag.",
             OutcomeMessage.Describe(new UnpackOutcome.StartFailed(1, 0, 1)));
         Assert.Equal(
-            "Could not start unpacking, see BepInEx/unpack-all.log. Picked up 1 from the floor and took 2 from storages, 3 waiting in your bag.",
+            "Could not start unpacking, see BepInEx/unpack-all.log. Picked up 1 from the floor and took 2 from storages. 3 are waiting in your bag.",
             OutcomeMessage.Describe(new UnpackOutcome.StartFailed(3, 1, 2)));
     }
 
@@ -143,8 +143,8 @@ public class OutcomeMessageTests
     [Fact]
     public void Unpacks_the_game_dropped_are_never_reported_as_unpacking()
     {
-        Assert.Equal("Nothing unpacked. 1 dropped by the game before it started, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(Done(dropped: 1)));
-        Assert.Equal("Unpacking 1 package. 2 dropped by the game before they started, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(Done(queued: 1, dropped: 2)));
+        Assert.Equal("Nothing unpacked. The game took 1 unpack off the queue before it started, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(Done(dropped: 1)));
+        Assert.Equal("Unpacking 1 package. The game took 2 unpacks off the queue before they started, see BepInEx/unpack-all.log.", OutcomeMessage.Describe(Done(queued: 1, dropped: 2)));
     }
 
     [Fact]
@@ -201,8 +201,8 @@ public class OutcomeMessageTests
 
         Assert.Equal("现在无法拆封：你的家尚未加载。", OutcomeMessage.Describe(notReady, isChinese: true));
         Assert.Equal("Can't unpack right now: your home is not loaded.", OutcomeMessage.Describe(notReady));
-        Assert.Equal("没有拆封任何包裹。1 个现在无法拆封：游戏无法将它加入队列。", OutcomeMessage.Describe(refused, isChinese: true));
-        Assert.Equal("Nothing unpacked. 1 can't be unpacked right now: the game would not line it up.", OutcomeMessage.Describe(refused));
+        Assert.Equal("没有拆封任何包裹。1 个现在无法拆封：游戏无法将它加入行动队列。", OutcomeMessage.Describe(refused, isChinese: true));
+        Assert.Equal("Nothing unpacked. 1 can't be unpacked right now: the game would not add it to the action queue.", OutcomeMessage.Describe(refused));
     }
 
     [Fact]

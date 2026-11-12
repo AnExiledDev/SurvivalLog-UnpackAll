@@ -171,7 +171,7 @@ internal sealed class GamePickUp : IPickUpGame
         var bag = agents.GetAgent(furnitureId)?.TryCast<BagFurniture>();
 
         if (bag == null || bag._IsDoorBox_k__BackingField) return new YardRead.NotOurs();
-        if (world.GameModeKey != GameMode.Default || !agents.IsHomeMap(ExploreSearchStateManager.GetCurrentMapId())) return new YardRead.Refused(Texts.NoHome);
+        if (world.GameModeKey != GameMode.Default || !agents.IsHomeMap(ExploreSearchStateManager.GetCurrentMapId())) return new YardRead.Refused(Texts.NotAtHome);
 
         // A package being carried or placed is hidden; IsSelected is only the hover highlight every menu target has.
         if (!bag._IsShow_k__BackingField) return new YardRead.Refused(Texts.BeingMoved);

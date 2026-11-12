@@ -12,7 +12,7 @@ public class KeyGateTests
         var parts = Settings.UnpackKey.Split('\n');
 
         Assert.Equal(2, parts.Length);
-        Assert.Contains("Unbound by default", parts[0]);
+        Assert.Contains("No key is set by default", parts[0]);
         Assert.DoesNotContain("F9", Settings.UnpackKey);
         Assert.Contains("默认不绑定", parts[1]);
     }

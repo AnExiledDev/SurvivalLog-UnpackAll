@@ -1,5 +1,5 @@
 Name: Unpack All
-Summary: Unpack every furniture package in your bag and on the floor at home with one click, never more than your home has free spots for. Turn on the options to also pull packages out of your storages or send crafted furniture straight to the entryway. Uses the game's Use action and waits behind the orders you already queued.
+Summary: Unpack every furniture package in your bag and on the floor at home with one click, never more than your home has free package spots for. You can also turn on taking packages out of your storages, or sending crafted furniture straight to the entryway. Each unpack works like the Use button and waits behind the actions you already queued.
 
 Description (BBCode):
 [center][img]https://sldb.core-directive.com/media/save/1-save-safe.png[/img][/center]
@@ -8,9 +8,9 @@ Unpacking furniture packages one at a time is slow, and lining up too many fills
 
 [size=5]Main features[/size]
 [list]
-[*][b]Bag first, then the floor, then storages[/b]: packages on the floor at home are picked up, then, if you turn it on in the config, packages in the storages at home you can see are taken out, and unpacked while spots are left. Storages are off by default.[/*]
-[*][b]Never more than fits[/b]: only as many unpacks as your home has free package spots. The rest stay where they are.[/*]
-[*][b]Game's Use action[/b]: the same action as the inventory's Use button, with the game's checks and timings.[/*]
+[*][b]Bag first, then the floor, then storages[/b]: packages in your bag are unpacked first, then the ones on the floor at home are picked up and unpacked while spots are left. If you turn on storages in the config, packages in the storages at home you can see go last. Storages are off by default.[/*]
+[*][b]Never more than fits[/b]: only as many unpacks as your home has free package spots for. The rest stay where they are.[/*]
+[*][b]Works like the Use button[/b]: each unpack is the same action as the inventory's Use button, so it takes the same time and has the same checks.[/*]
 [*][b]Your queued actions stay[/b]: unpacks join the end of the queue, so your own actions run first.[/*]
 [*][b]Clear messages[/b]: says how many are unpacking, how many were picked up or taken from storages, and why any were left.[/*]
 [*][b]Crafted furniture to the entryway[/b]: turn it on and furniture you craft at a workbench goes straight to the entryway, as if you had clicked Unpack to Entryway. A package an open Aid Platform commission asks for stays a package, and when the entryway is full the rest stay in your bag. It starts off, since it moves your things without a click.[/*]
@@ -23,7 +23,7 @@ No key is set by default: use Unpack all in the Mods menu. You can set an unpack
 
 Works in English and Chinese.
 
-The mod adds no data of its own to your save, but the unpacks are real: packages come off the floor or out of your storages into your bag and become furniture. You can remove it at any time; packages and furniture stay as they are.
+The mod adds no data of its own to your save, but the unpacks are real: packages come off the floor or out of your storages into your bag and become furniture. You can remove it at any time, and packages and furniture stay as they are.
 
 [size=5]Known issues[/size]
 [list]
@@ -59,11 +59,11 @@ The mod adds no data of its own to your save, but the unpacks are real: packages
 Delete [font=Courier New]UnpackAll.dll[/font] from the [font=Courier New]BepInEx\plugins[/font] folder.
 
 [size=5]Configuration[/size]
-To set a key, or turn storages or crafted furniture to the entryway on, edit [font=Courier New]BepInEx\config\com.dev.survivallog.unpackall.cfg[/font] while the game is closed, or do it in game on the Mod Manager's Mods screen, where changes take effect at once (see [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll/blob/main/CONFIG.md]CONFIG.md[/url]; the cfg file explains each setting in English and Chinese).
+To set a key, or to turn on storages or crafted furniture to the entryway, edit [font=Courier New]BepInEx\config\com.dev.survivallog.unpackall.cfg[/font] while the game is closed. You can also do it in game on the Mod Manager's Mods screen, where changes take effect at once. The cfg file explains each setting in English and Chinese, and [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll/blob/main/CONFIG.md]CONFIG.md[/url] lists them all.
 
 [size=5]Feedback[/size]
 Found a bug or have an idea? Come say hi on the [url=https://discord.gg/trTsyxUFqg]Core Directive Discord[/url], or post in this page's Posts tab. For bugs, please include [font=Courier New]BepInEx\LogOutput.log[/font] and [font=Courier New]BepInEx\unpack-all.log[/font].
-To reach me directly, message [b]exiled.dev[/b] on Discord; you can find me in the [url=https://discord.gg/MZGg4gQAUe]official Survival Log Discord[/url]. I'm also on X as [url=https://x.com/AnExiledDev]@AnExiledDev[/url].
+To reach me directly, message [b]exiled.dev[/b] on Discord. You can find me in the [url=https://discord.gg/MZGg4gQAUe]official Survival Log Discord[/url]. I'm also on X as [url=https://x.com/AnExiledDev]@AnExiledDev[/url].
 
 [size=5]Source and license[/size]
 Open source under MIT: [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll]github.com/AnExiledDev/SurvivalLog-UnpackAll[/url]
@@ -75,13 +75,13 @@ Open source under MIT: [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll
 
 [size=5]主要功能[/size]
 [list]
-[*][b]先背包，再地上，最后储物家具[/b]：先拆封背包里的包裹，然后捡起家里地上的包裹；如果在配置中开启，还会取出家里可见储物家具中的包裹，在还有空位时一起拆封。储物家具默认关闭。[/*]
+[*][b]先背包，再地上，最后储物家具[/b]：先拆封背包里的包裹，还有空位时再捡起家里地上的包裹一起拆封。在配置中开启储物家具后，最后还会拆封家里可见储物家具中的包裹。储物家具默认关闭。[/*]
 [*][b]绝不超出空位[/b]：排进队列的拆封数量不超过家里空余的包裹位，其余的原地不动。[/*]
-[*][b]游戏自己的使用动作[/b]：和背包界面「使用」按钮相同的动作，遵循游戏自己的检查和时间。[/*]
+[*][b]和「使用」按钮一样[/b]：每次拆封都和背包界面「使用」按钮是同一个动作，用时和检查都一样。[/*]
 [*][b]保留你排好的行动[/b]：拆封加在队列末尾，你自己排的行动先执行。[/*]
 [*][b]清楚的提示[/b]：告诉你正在拆封多少个、从地上捡起或从储物家具取出多少个，以及剩下的为什么没拆。[/*]
-[*][b]做好的家具送到玄关[/b]：开启后，在工作台做好的家具会直接送到玄关，和点「拆到玄关」一样。援助平台上未完成的委托需要的包裹会保留为包裹；玄关放满后，其余的留在背包里。默认关闭，因为它会在你没有点击时移动你的物品。[/*]
-[*][b]拿起院子里的包裹[/b]：点击屋外空地上的家具包裹，选择「拿起」，就能把它放回背包，比如拿去交援助平台的委托。背包装不下时，会放进客厅的购物袋；两边都没有地方时，包裹留在原地。买来的包裹拿起后就不能再退货了。[/*]
+[*][b]做好的家具送到玄关[/b]：开启后，在工作台做好的家具会直接送到玄关，和点「拆到玄关」一样。救助平台上未完成的委托需要的包裹会保留为包裹。玄关放满后，其余的留在背包里。默认关闭，因为它会在你没有点击时移动你的物品。[/*]
+[*][b]拿起屋外空地上的包裹[/b]：点击屋外空地上的家具包裹，选择「拿起」，就能把它放回背包，比如拿去交救助平台的委托。背包装不下时，会放进客厅的购物袋。两边都没有地方时，包裹留在原地。买来的包裹拿起后就不能再退货了。[/*]
 [*][b]Mods 菜单[/b]：背包工具栏上，以及大部分设施界面背包栏里的 Mods 按钮，里面有「全部拆封」一项，和其他使用同一菜单的模组共用。[/*]
 [/list]
 
@@ -98,7 +98,7 @@ Open source under MIT: [url=https://github.com/AnExiledDev/SurvivalLog-UnpackAll
 [*]只有在家时才会拿取地上和储物家具中的包裹；开着储物、工作台或商店界面时，不会从储物家具中取出任何东西。[/*]
 [*]上锁的储物家具、无人机站和无人机、邻居礼物篮、门口箱子以及工作台的料仓永远不会被动用。[/*]
 [*]游戏会整组捡起地上的包裹，所以有些包裹可能留在背包里等下次再拆。比空位还大的一组储物包裹会留在储物家具中。[/*]
-[*]游戏自己的拒绝原因按游戏原文显示。[/*]
+[*]游戏给出的拒绝原因按游戏原文显示。[/*]
 [*]共用的 Mods 按钮及其提示保持英文。[/*]
 [/list]
 

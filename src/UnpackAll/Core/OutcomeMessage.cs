@@ -39,16 +39,16 @@ public static class OutcomeMessage
         var see = SeeLog.En;
         var lines = new List<string> { tally.Queued > 0 ? $"Unpacking {Packages(tally.Queued)}." : "Nothing unpacked." };
 
-        if (tally.Dropped > 0) lines.Add($"{tally.Dropped} dropped by the game before {ItOrThey(tally.Dropped)} started, {see}");
+        if (tally.Dropped > 0) lines.Add($"The game took {Unpacks(tally.Dropped)} off the queue before {ItOrThey(tally.Dropped)} started, {see}");
         if (tally.PickedUp + tally.FromStorage > 0) lines.Add(BroughtLine(tally.PickedUp, tally.FromStorage, tally.WaitingInBag, isChinese: false));
-        if (tally.NoSpot > 0) lines.Add($"{tally.NoSpot} left: no free package spot at home.");
-        if (tally.FloorRefused > 0) lines.Add($"{tally.FloorRefused} left on the floor: your bag could not carry {ItOrThem(tally.FloorRefused)}.");
-        if (tally.StorageRefused > 0) lines.Add($"{tally.StorageRefused} left in storages: your bag could not carry {ItOrThem(tally.StorageRefused)}.");
-        if (tally.FloorAway > 0) lines.Add($"{tally.FloorAway} on the floor at home: go home to pick {ItOrThem(tally.FloorAway)} up.");
-        if (tally.StorageAway > 0) lines.Add($"{tally.StorageAway} in storages at home: go home to unpack {ItOrThem(tally.StorageAway)}.");
-        if (tally.StorageBehindPanel > 0) lines.Add($"{tally.StorageBehindPanel} left in storages: close the open window and press again.");
-        if (tally.StorageUnchecked > 0) lines.Add($"{tally.StorageUnchecked} left in storages: could not check for open windows, {see}");
-        if (tally.StorageTooBig > 0) lines.Add($"{tally.StorageTooBig} left in storages: a stack is bigger than the free package spots.");
+        if (tally.NoSpot > 0) lines.Add($"{tally.NoSpot} left because your home has no free package spots.");
+        if (tally.FloorRefused > 0) lines.Add($"{tally.FloorRefused} left on the floor because your bag can't carry {ItOrThem(tally.FloorRefused)}.");
+        if (tally.StorageRefused > 0) lines.Add($"{tally.StorageRefused} left in storages because your bag can't carry {ItOrThem(tally.StorageRefused)}.");
+        if (tally.FloorAway > 0) lines.Add($"{tally.FloorAway} {IsOrAre(tally.FloorAway)} on the floor at home. Go home to pick {ItOrThem(tally.FloorAway)} up.");
+        if (tally.StorageAway > 0) lines.Add($"{tally.StorageAway} {IsOrAre(tally.StorageAway)} in storages at home. Go home to unpack {ItOrThem(tally.StorageAway)}.");
+        if (tally.StorageBehindPanel > 0) lines.Add($"{tally.StorageBehindPanel} left in storages because a window is open. Close it and press again.");
+        if (tally.StorageUnchecked > 0) lines.Add($"{tally.StorageUnchecked} left in storages because the mod could not check for open windows, {see}");
+        if (tally.StorageTooBig > 0) lines.Add($"{tally.StorageTooBig} left in storages because the stack is bigger than your free package spots.");
         if (tally.Unusable > 0) lines.Add(UnusableLine(tally.Unusable, tally.UnusableReason, isChinese: false));
 
         return string.Join(" ", lines);
@@ -137,7 +137,7 @@ public static class OutcomeMessage
             _ => $"Took {fromStorage} from storages",
         };
 
-        return waitingInBag > 0 ? $"{brought}, {waitingInBag} waiting in your bag." : $"{brought}.";
+        return waitingInBag > 0 ? $"{brought}. {waitingInBag} {IsOrAre(waitingInBag)} waiting in your bag." : $"{brought}.";
     }
 
     private static string UnusableLine(int count, Phrase? reason, bool isChinese)
@@ -156,6 +156,8 @@ public static class OutcomeMessage
     private static string Reason(Phrase reason, bool isChinese) => RichTextTag.Replace(reason.Pick(isChinese), "").Trim().TrimEnd(ClosingPunctuation);
 
     private static string Packages(int count) => count == 1 ? "1 package" : $"{count} packages";
+
+    private static string Unpacks(int count) => count == 1 ? "1 unpack" : $"{count} unpacks";
 
     private static string ItOrThey(int count) => count == 1 ? "it" : "they";
 

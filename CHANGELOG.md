@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.3
+
+- Clearer wording in the settings and in the messages after Unpack all and Pick up.
+- When you are away from home, the greyed-out Pick up now tells you that you are not at home.
+- Made for Survival Log 1.1.20719.
+
 ## 0.9.2
 
 - Sending crafted furniture straight to the entryway (`CraftedToDoor`) is now off for a new install, since it moves your things without a click. Turn it on in the config or on the Mod Manager's Mods screen. A setting you already saved is kept.
@@ -7,13 +13,13 @@
 
 ## 0.9.1
 
-- Now uses Exiled's Toolkit for its shared parts, so it needs Exiled's Toolkit 0.19.0 or newer.
+- Now needs Exiled's Toolkit 0.19.0 or newer, because code it shares with other mods now lives there.
 - Made for Survival Log 1.1.20719.
 
 ## 0.9.0
 
 - **Warning:** needs Exiled's Toolkit 0.15.0 or newer. Update the Toolkit first.
-- The Mods menu now comes from Exiled's Toolkit, the same menu the other mods use. Unpack all still sits in it on the inventory and on the station screens, and it shows your unpack key if you set one.
+- The Mods menu now comes from Exiled's Toolkit, the same menu the other mods use. Unpack all is still in it on the inventory and the station screens, and it shows your unpack key if you set one.
 - Made for Survival Log 1.1.20151.
 
 ## 0.8.0
@@ -26,7 +32,7 @@
 ## 0.7.0
 
 - New: furniture you craft at a workbench goes straight to the entryway, as if you had clicked Unpack to Entryway. A package an open Aid Platform commission asks for stays a package, and when the entryway is full the rest stay in your bag. Turn it off with `CraftedToDoor` under Furniture.
-- New installs start with no unpack key, since Unpack all in the Mods menu does the same. If you already had the mod, your config keeps the key it had; set `UnpackKey` to `None` to drop it.
+- New installs start with no unpack key, since Unpack all in the Mods menu does the same. If you already had the mod, your config keeps the key it had. Set `UnpackKey` to `None` to drop it.
 - The unpack key does nothing while you are typing in a text box.
 - Exiled's Toolkit 0.12.0 or newer is now required.
 - Made for Survival Log 1.1.20151.
@@ -40,12 +46,12 @@
 
 ## 0.6.0
 
-- New: `UiScale` under Interface sets the size of Unpack All's message after a press on its own, from 75% to 200%, whatever Exiled's Toolkit's UI size is. At 0, the default, it follows the Toolkit's. Needs Exiled's Toolkit 0.11.0 or newer.
+- New: `UiScale` under Interface sets the size of the message after a press, from 75% to 200%, separately from Exiled's Toolkit's UI size. At 0, the default, it uses the Toolkit's size. Needs Exiled's Toolkit 0.11.0 or newer.
 - Made for Survival Log 1.1.19611.
 
 ## 0.5.2
 
-- The message after a press can be drawn bigger or smaller with the UI size setting of Exiled's Toolkit 0.10.0 or newer. A change shows at once.
+- You can make the message after a press bigger or smaller with the UI size setting in Exiled's Toolkit 0.10.0 or newer. A change shows at once.
 - The Mods button and its menu keep the game's size, like the rest of the toolbar.
 - Made for Survival Log 1.1.19611.
 
